@@ -20,12 +20,12 @@ Content-Type: application/json
 
 ### Obtener Perfil (Ruta Protegida)
 GET http://localhost:3000/api/users/perfil
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJsdWNhc0B0ZXN0LmNvbSIsImlhdCI6MTc3MzEyOTMzNiwiZXhwIjoxNzczMTMyOTM2fQ.uvTGaOY1A-rcPQ0RBF410bjVxpXAopo9TV53E3dFdyM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJsdWNhc0B0ZXN0LmNvbSIsImlhdCI6MTc3MzM5ODM0OCwiZXhwIjoxNzczNDAxOTQ4fQ.4BSNUIyH4TSdvKnLaZHHRhBwx1QAOB5NhUwqMtj63go
 
 ### Prueba de Comercio
 POST http://localhost:3000/api/comercios
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJsdWNhc0B0ZXN0LmNvbSIsImlhdCI6MTc3MzEyOTMzNiwiZXhwIjoxNzczMTMyOTM2fQ.uvTGaOY1A-rcPQ0RBF410bjVxpXAopo9TV53E3dFdyM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJsdWNhc0B0ZXN0LmNvbSIsImlhdCI6MTc3MzM5ODM0OCwiZXhwIjoxNzczNDAxOTQ4fQ.4BSNUIyH4TSdvKnLaZHHRhBwx1QAOB5NhUwqMtj63go
 
 {
     "nombre": "Comercio Test",
@@ -38,15 +38,15 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiO
 ### Agregar un producto a un comercio específico
 POST http://localhost:3000/api/productos
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJsdWNhc0B0ZXN0LmNvbSIsImlhdCI6MTc3MzEyOTMzNiwiZXhwIjoxNzczMTMyOTM2fQ.uvTGaOY1A-rcPQ0RBF410bjVxpXAopo9TV53E3dFdyM   
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJsdWNhc0B0ZXN0LmNvbSIsImlhdCI6MTc3MzM5ODM0OCwiZXhwIjoxNzczNDAxOTQ4fQ.4BSNUIyH4TSdvKnLaZHHRhBwx1QAOB5NhUwqMtj63go
 
 {
     "nombre": "Producto Test",
     "descripcion": "Descripción del producto de prueba",
     "precio": 19.99,
     "stock": 100,
-    "imagen": "url_de_la_imagen.jpg",
-    "id_comercio": 4
+    "imagen": "producto_testº.jpg",
+    "id_comercio": 5
 }
 
 ### Actualizar un producto existente

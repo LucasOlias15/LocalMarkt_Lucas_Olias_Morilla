@@ -30,6 +30,8 @@ const crearTablas = async () => {
         categoria VARCHAR(250) NOT NULL,
         contacto VARCHAR(250) NOT NULL,
         direccion VARCHAR(250) NOT NULL,
+        latitud DECIMAL(10, 8),
+        longitud DECIMAL(11, 8),    
         FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
     )
     `);

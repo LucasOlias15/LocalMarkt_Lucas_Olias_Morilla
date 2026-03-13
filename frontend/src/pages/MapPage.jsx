@@ -1,89 +1,153 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useSearch } from 'wouter';
-import { IconTicker } from '../components/IconTicker';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useSearch } from "wouter";
+import { IconTicker } from "../components/IconTicker";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { obtenerTodosLosComercios } from "../services/ComerceService";
+import { renderToString } from "react-dom/server";
 
-const customIcon = (emoji) => L.divIcon({
-  html: `<div style="font-size: 24px; background: white; padding: 10px; border-radius: 15px; border: 2px solid #00a388; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transform: rotate(3deg);">${emoji}</div>`,
-  className: 'custom-pin',
-  iconSize: [54, 54],
-  iconAnchor: [22, 45]
-});
+/* ---------------- ICONOS DEL MAPA (DEL ARCHIVO 2) ---------------- */
+const categoryColors = {
+  "Panadería": "#facc15",
+  "Frutería": "#10b981",
+  "Carnicería": "#ef4444",
+  "Bio": "#84cc16",
+  "default": "#0d9488"
+};
 
-const shops = [
-  { id: 1, name: "Frutería Paco", type: "Frutería", coords: [37.9808, 12.9604], emoji: '🍎', distance: "0.2 km", rating: "4.8", img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400" },
-  { id: 2, name: "Panadería El Horno", type: "Panadería", coords: [37.9768, 12.9618], emoji: '🥖', distance: "0.5 km", rating: "4.9", img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400" },
-  { id: 3, name: "Carnes selectas Ruiz", type: "Carnicería", coords: [37.9828, 12.9607], emoji: '🥩', distance: "0.8 km", rating: "4.7", img: "https://images.unsplash.com/photo-1607623814075-e51df1bd682f?w=400" },
-  { id: 4, name: "Quesos de la Tierra", type: "Bio", coords: [37.9799, 12.9580], emoji: '🧀', distance: "1.2 km", rating: "5.0", img: "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400" },
-];
+const MapPin = ({ type }) => {
+  const color = categoryColors[type] || categoryColors.default;
+  return (
+    <div className="relative flex items-center justify-center w-12 h-12 hover:scale-110 transition-transform">
+      <div
+        className="absolute w-8 h-8 rounded-full shadow-xl border-4 border-white"
+        style={{ background: color }}
+      />
+      <div className="absolute w-3 h-3 bg-white rounded-full shadow-inner"/>
+    </div>
+  );
+};
 
-// Este componente es el que mueve la cámara físicamente
+const customIcon = (type) =>
+  L.divIcon({
+    html: renderToString(<MapPin type={type} />),
+    className: "border-none bg-transparent",
+    iconSize: [48, 48],
+    iconAnchor: [24, 24] // Centrado perfecto
+  });
+
+/* ---------------- CONTROLADOR MAPA (DEL ARCHIVO 2) ---------------- */
 const MapController = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
-    if (center) {
-      map.flyTo(center, zoom, { animate: true, duration: 1.5 });
-    }
+    map.flyTo(center, zoom, { animate: true, duration: 1.5 });
   }, [center, zoom, map]);
   return null;
 };
 
 export const MapPage = () => {
-  const [mapCenter, setMapCenter] = useState([40.4167, -3.7037]);
-  const [selectedShop, setSelectedShop] = useState(null);
-  const [filter, setFilter] = useState('Todos'); // <-- Añadido que faltaba
-  const [zoomLevel, setZoomLevel] = useState(15); // Estado para el zoom
-  
-  const searchParams = new URLSearchParams(useSearch());
-  const searchQuery = searchParams.get('search')?.toLowerCase() || "";
+  // 📍 Estado inicial apuntando a Alcamo, Sicilia por defecto
+  const [mapCenter, setMapCenter] = useState([37.978, 12.961]);
+  const [zoomLevel, setZoomLevel] = useState(15);
 
-  // Lógica de filtrado combinada (Busqueda + Categoría)
-  const filteredShops = shops.filter(shop => {
-    const matchesFilter = filter === 'Todos' || shop.type === filter;
-    const matchesSearch = shop.name.toLowerCase().includes(searchQuery) || shop.type.toLowerCase().includes(searchQuery);
+  const [shops, setShops] = useState([]);
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [filter, setFilter] = useState("Todos");
+  const [loading, setLoading] = useState(true);
+
+  // Variable de estado temporal para conectar el buscador de la UI
+  const [localSearch, setLocalSearch] = useState("");
+
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const searchQuery = searchParams.get("search")?.toLowerCase() || localSearch.toLowerCase();
+
+  /* ---------------- CARGAR COMERCIOS ---------------- */
+  useEffect(() => {
+    const cargar = async () => {
+      setLoading(true);
+      const data = await obtenerTodosLosComercios();
+
+      const mapped = data.map((c) => ({
+        id: c.id_comercio,
+        name: c.nombre,
+        type: c.categoria || "General",
+        coords: [c.latitud || 37.978, c.longitud || 12.961],
+        img: c.imagen || "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400"
+      }));
+
+      setShops(mapped);
+      
+      // Si no hay búsqueda, centramos el mapa en la primera tienda que cargue de la base de datos
+      if (mapped.length > 0 && !searchQuery) {
+        setMapCenter(mapped[0].coords);
+      }
+      
+      setLoading(false);
+    };
+
+    cargar();
+  }, []); // Solo se ejecuta al montar
+
+  /* ---------------- BUSCADOR ---------------- */
+  useEffect(() => {
+    if (searchQuery && shops.length > 0) {
+      const found = shops.find(
+        (s) =>
+          s.name.toLowerCase().includes(searchQuery) ||
+          s.type.toLowerCase().includes(searchQuery)
+      );
+
+      if (found) {
+        setMapCenter(found.coords);
+        setZoomLevel(17);
+      }
+    }
+  }, [searchQuery, shops]);
+
+  /* ---------------- PANTALLA DE CARGA PREVENIENDO ERROR DE HOOKS ---------------- */
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-base-100">
+        <span className="loading loading-ring loading-lg text-jungle_teal"></span>
+      </div>
+    );
+  }
+
+  /* ---------------- FILTROS ---------------- */
+  const filteredShops = shops.filter((shop) => {
+    const matchesFilter = filter === "Todos" || shop.type === filter;
+    const matchesSearch =
+      shop.name.toLowerCase().includes(searchQuery) ||
+      shop.type.toLowerCase().includes(searchQuery);
     return matchesFilter && matchesSearch;
   });
 
-  // Función para Mi Ubicación (Geolocalización real)
+  /* ---------------- GEOLOCALIZACIÓN ---------------- */
   const handleGeoLocation = () => {
     if (!navigator.geolocation) {
-      alert("Tu navegador no soporta geolocalización");
+      alert("Geolocalización no soportada en este navegador.");
       return;
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setMapCenter([latitude, longitude]);
-        setZoomLevel(17); // Zoom más cercano al encontrarte
-      },
-      (error) => {
-        alert("No se pudo obtener tu ubicación. Revisa los permisos de tu navegador.");
-      }
-    );
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { latitude, longitude } = pos.coords;
+      setMapCenter([latitude, longitude]);
+      setZoomLevel(17);
+    }, () => {
+      alert("No se pudo obtener tu ubicación. Revisa los permisos.");
+    });
   };
 
-  // Funciones de Zoom
-  const zoomIn = () => setZoomLevel(prev => Math.min(prev + 1, 18));
-  const zoomOut = () => setZoomLevel(prev => Math.max(prev - 1, 5));
-
-  // Efecto para volar a la tienda si viene del buscador
-  useEffect(() => {
-    if (searchQuery) {
-      const foundShop = shops.find(s => 
-        s.name.toLowerCase().includes(searchQuery) || s.type.toLowerCase().includes(searchQuery)
-      );
-      if (foundShop) setMapCenter(foundShop.coords);
-    }
-  }, [searchQuery]);
+  /* ---------------- ZOOM ---------------- */
+  const zoomIn = () => setZoomLevel((z) => Math.min(z + 1, 18));
+  const zoomOut = () => setZoomLevel((z) => Math.max(z - 1, 5));
 
   return (
     <div className="w-full min-h-screen bg-base-100 pb-32">
-      
-      {/* 1. SECCIÓN DE CABECERA */}
+
+      {/* ---------------- HERO (ESTILO ORIGINAL ARCHIVO 1) ---------------- */}
       <section className="w-full max-w-7xl mx-auto px-8 md:px-16 pt-32 pb-16 overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8">
         <div className="w-full lg:w-3/5 text-left z-10">
           <motion.h1 
@@ -93,7 +157,7 @@ export const MapPage = () => {
           >
             Comercios <br />
             cerca de ti <br />
-            a un <span className="text-transparent bg-clip-text bg-gradient-to-r from-jungle_teal to-sea_green-500 pb-2 inline-block">click.</span>
+            a un <span className="text-transparent bg-clip-text bg-linear-to-r from-jungle_teal to-sea_green-500 pb-2 inline-block">click.</span>
           </motion.h1>
           <motion.p className="mt-6 text-xl text-base-content/60 font-medium max-w-md">
             Encuentra pan fresco, fruta de temporada y los mejores servicios a menos de 10 minutos de tu casa.
@@ -105,16 +169,22 @@ export const MapPage = () => {
           <motion.div className="bg-base-100/60 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-[2.5rem] p-8 max-w-sm w-full relative z-10">
             <div className="flex items-center gap-4 mb-8">
               <div className="w-14 h-14 rounded-full border-4 border-base-100 bg-jungle_teal text-white flex items-center justify-center font-bold">+120</div>
-              <p className="font-bold">Tiendas activas en tu zona</p>
+              <p className="font-bold text-base-content">Tiendas activas en tu zona</p>
             </div>
             <div className="relative">
-              <input type="text" placeholder="Ej: Panadería..." className="w-full bg-base-200/80 px-6 py-4 rounded-2xl focus:outline-none" />
+              <input 
+                type="text" 
+                placeholder="Ej: Panadería..." 
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                className="w-full bg-base-200/80 px-6 py-4 rounded-2xl focus:outline-none text-base-content placeholder:text-base-content/50" 
+              />
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* 2. CINTA INCLINADA */}
+      {/* ---------------- RIBBON (ESTILO ORIGINAL ARCHIVO 1) ---------------- */}
       <section className="w-full relative py-20 overflow-hidden flex items-center justify-center">
         <div className="map-ribbon-main w-[110vw] h-20 shadow-2xl flex items-center -rotate-2 z-20 transition-colors bg-jungle_teal">
           <IconTicker />
@@ -122,18 +192,19 @@ export const MapPage = () => {
         <div className="map-ribbon-bg absolute w-[110vw] h-20 rotate-2 z-10 opacity-30 blur-[6px] bg-yellow-400"></div>
       </section>
 
-      {/* 3. SECCIÓN DEL MAPA */}
+      {/* ---------------- MAPA (ESTILO Y LÓGICA ARCHIVO 2) ---------------- */}
       <section className="w-full max-w-7xl mx-auto px-6 mb-24">
-        <div className="relative w-full h-[650px] md:h-[750px] bg-base-200 rounded-[3.5rem] shadow-2xl overflow-hidden border border-base-300 group">
-          
-          {/* FILTROS: z-50 para que el Header (z-2000) lo tape al bajar */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
-            <div className="bg-base-100/80 backdrop-blur-xl p-2 rounded-2xl border border-white/20 shadow-xl flex gap-2 overflow-x-auto no-scrollbar">
-              {['Todos', 'Frutería', 'Panadería', 'Carnicería', 'Bio'].map((cat) => (
-                <button 
-                  key={cat} 
-                  onClick={() => setFilter(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${filter === cat ? 'bg-jungle_teal text-white' : 'bg-base-200 text-base-content/70'}`}
+        <div className="relative w-full h-175 rounded-[3rem] overflow-hidden shadow-2xl bg-base-200">
+
+          {/* FILTROS */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-100 w-full max-w-md px-4">
+            <div className="bg-white/80 backdrop-blur-xl p-2 rounded-2xl shadow-xl flex gap-2 overflow-x-auto no-scrollbar">
+              {["Todos","Frutería","Panadería","Carnicería","Bio"].map((cat)=> (
+                <button
+                  key={cat}
+                  onClick={()=>setFilter(cat)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all
+                  ${filter === cat ? "bg-jungle_teal text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                 >
                   {cat}
                 </button>
@@ -141,74 +212,106 @@ export const MapPage = () => {
             </div>
           </div>
 
-          {/* MAPA REAL: Único y controlado */}
-          <MapContainer 
-            center={mapCenter} 
-            zoom={15} 
-            zoomControl={false} 
-            className="h-full w-full z-10"
+          <MapContainer
+            center={mapCenter}
+            zoom={zoomLevel}
+            zoomControl={false}
+            className="w-full h-full z-10"
           >
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-            
-            <MapController center={mapCenter} />
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+            <MapController center={mapCenter} zoom={zoomLevel} />
 
             {filteredShops.map((shop) => (
-              <Marker 
-                key={shop.id} 
-                position={shop.coords} 
-                icon={customIcon(shop.emoji)}
-                eventHandlers={{ click: () => {
-                  setSelectedShop(shop);
-                  setMapCenter(shop.coords);
-                }}}
+              <Marker
+                key={shop.id}
+                position={shop.coords}
+                icon={customIcon(shop.type)}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedShop(shop);
+                    setMapCenter(shop.coords);
+                  }
+                }}
               />
             ))}
           </MapContainer>
 
-{/* BOTONES DE CONTROL (Zoom y Ubicación) */}
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
-            {/* Botón Mi Ubicación (El nuevo 🎯) */}
-            <button 
+          {/* CONTROLES */}
+<div className="absolute right-6 top-24 flex flex-col gap-3 z100">
+              <button
               onClick={handleGeoLocation}
-              className="w-12 h-12 bg-jungle_teal text-white rounded-2xl shadow-lg flex items-center justify-center hover:scale-110 transition-all mb-4"
+              className="w-12 h-12 rounded-xl bg-jungle_teal text-white shadow-lg hover:scale-110 transition flex items-center justify-center"
               title="Mi ubicación"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
               </svg>
             </button>
 
-            {/* Botones Zoom */}
-            <button 
+            <button
               onClick={zoomIn}
-              className="w-12 h-12 bg-base-100/90 backdrop-blur-md rounded-2xl shadow-lg flex items-center justify-center hover:bg-jungle_teal hover:text-white transition-all font-bold text-xl"
-            > + </button>
-            <button 
+              className="w-12 h-12 rounded-xl bg-white shadow-lg text-2xl font-bold flex items-center justify-center text-gray-700 hover:bg-gray-50 transition"
+            >
+              +
+            </button>
+
+            <button
               onClick={zoomOut}
-              className="w-12 h-12 bg-base-100/90 backdrop-blur-md rounded-2xl shadow-lg flex items-center justify-center hover:bg-jungle_teal hover:text-white transition-all font-bold text-xl"
-            > - </button>
+              className="w-12 h-12 rounded-xl bg-white shadow-lg text-2xl font-bold flex items-center justify-center text-gray-700 hover:bg-gray-50 transition"
+            >
+              −
+            </button>
           </div>
 
-          {/* TARJETA DETALLE */}
+          {/* LEYENDA */}
+          <div className="absolute bottom-6 left-6 z-100 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 space-y-2 text-sm font-medium">
+            {Object.entries(categoryColors).map(([cat,color]) => {
+              if(cat === "default") return null;
+              return (
+                <div key={cat} className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full shadow-sm" style={{background:color}} />
+                  <span className="text-gray-700">{cat}</span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* TARJETA COMERCIO */}
           <AnimatePresence>
             {selectedShop && (
-              <motion.div 
-                initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
-                className="absolute bottom-6 right-6 left-6 md:left-auto md:w-[380px] bg-base-100/90 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-2xl z-[10]"
+              <motion.div
+                initial={{ opacity:0, y:40 }}
+                animate={{ opacity:1, y:0 }}
+                exit={{ opacity:0, y:40 }}
+                className="absolute bottom-6 right-6 w-350px bg-white p-6 rounded-3xl shadow-2xl z-100"
               >
-                <div className="flex gap-4">
-                  <img src={selectedShop.img} className="w-24 h-24 rounded-2xl object-cover" />
-                  <div className="flex-1">
-                    <h3 className="text-xl font-black">{selectedShop.name}</h3>
-                    <p className="text-xs text-jungle_teal font-bold uppercase tracking-widest">{selectedShop.type}</p>
-                    <Link href={`/tienda/${selectedShop.id}`} className="btn btn-sm mt-4 w-full bg-jungle_teal hover:bg-sea_green text-white border-none rounded-xl font-black">Entrar ➔</Link>
-                  </div>
-                </div>
-                <button onClick={() => setSelectedShop(null)} className="absolute top-4 right-4 text-base-content/30 hover:text-base-content">✕</button>
+                <img
+                  src={selectedShop.img}
+                  className="w-full h-32 object-cover rounded-xl mb-4"
+                />
+                <h3 className="text-xl font-black text-gray-800">
+                  {selectedShop.name}
+                </h3>
+                <p className="text-xs text-jungle_teal font-bold uppercase tracking-wide mb-4 mt-1">
+                  {selectedShop.type}
+                </p>
+                <Link
+                  href={`/tienda/${selectedShop.id}`}
+                  className="btn btn-sm w-full bg-jungle_teal hover:bg-teal-700 text-white border-none rounded-xl"
+                >
+                  Entrar ➔
+                </Link>
+                <button
+                  onClick={()=>setSelectedShop(null)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"
+                >
+                  ✕
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
+
         </div>
       </section>
     </div>

@@ -9,7 +9,7 @@ export const registrarProducto = async (req, res) => {
 
         const precioRegExp = /^\d+(\.\d{1,2})?$/;
         const stockRegExp = /^\d+$/;
-        const imagenRegExp = /^https?:\/\/.*\.(jpg|jpeg|png|webp)$/;
+        //const imagenRegExp = /^https?:\/\/.*\.(jpg|jpeg|png|webp)$/;
         const nombreRegExp = /^[A-Za-zÑñÁáÉéÍíÓóÚú\s'-]{2,50}$/;
 
         if (!nombreRegExp.test(nombre)) {
@@ -24,10 +24,11 @@ export const registrarProducto = async (req, res) => {
             return res.status(400).json({ error: "El stock debe ser un número entero." });
         }
 
+        /*
         if (!imagenRegExp.test(imagen)) {
             return res.status(400).json({ error: "La URL de la imagen no es válida o el formato no está permitido." });
         }
-
+*/
         // 1. Buscamos el comercio para verificar la propiedad
         const comercio = await getComercioById(id_comercio);
 

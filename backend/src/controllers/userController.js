@@ -49,7 +49,8 @@ export const loginUsuario = async (req, res) => {
         const token = jwt.sign(
             { id: user.id_usuario, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' });
+            //TODO : El token expira en 30 días, pero podríamos hacer que expire antes para mayor seguridad
+            { expiresIn: '30d' });
         
         // Enviamos la respuesta al cliente con el token y algunos datos básicos del usuario
         return res.status(200).json({
