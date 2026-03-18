@@ -5,6 +5,7 @@ import { CartDrawer } from './CartDrawer';
 import { Link, useLocation } from 'wouter'; 
 import { useCartStore } from '../store/useCartStore';
 
+    //TODO Funcionalidad de botón de cambiar de idioma.
 
 export const Header = () => {
 
@@ -186,7 +187,7 @@ export const Header = () => {
         </svg>
     </label>
     
-    <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-2xl z-[110] w-52 p-2 shadow-2xl border border-base-200 mt-4 font-bold">
+    <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-2xl z-110 w-52 p-2 shadow-2xl border border-base-200 mt-4 font-bold">
         {user?.nombre ? (
             <>
                 {/* INFO USUARIO */}

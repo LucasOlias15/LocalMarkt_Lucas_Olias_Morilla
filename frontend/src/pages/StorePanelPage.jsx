@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
-import { motion } from "framer-motion";
+
+// TODO: CLOUDINARY - Cambiar el envío de datos a FormData.
+// Como ahora enviamos una imagen (archivo físico) al backend, 
+// NO podemos usar JSON.stringify(). Tenemos que crear un objeto FormData:
+// const formData = new FormData();
+// formData.append("nombre", nombre);
+// formData.append("precio", precio);
+// formData.append("imagen", archivoImagen);
+// Y en el fetch, quitar el 'Content-Type': 'application/json' de los headers.
 
 export const StorePanelPage = () => {
     // 💡 1. RUTAS Y ESTADOS (La "memoria" de la página)
@@ -167,14 +175,14 @@ export const StorePanelPage = () => {
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="bg-base-100 p-6 rounded-[2rem] shadow-xl border border-base-300 h-fit">
+                    <div className="bg-base-100 p-6 rounded-4xl shadow-xl border border-base-300 h-fit">
                         <img src={store?.imagen} className="w-full h-40 object-cover rounded-2xl mb-4" alt="Tienda" />
                         <h2 className="text-xl font-bold mb-2">{store?.nombre}</h2>
                         <span className="badge badge-outline border-jungle_teal text-jungle_teal font-bold mb-4">{store?.categoria}</span>
                         <p className="text-sm opacity-70">📍 {store?.direccion}</p>
                     </div>
 
-                    <div className="lg:col-span-2 bg-base-100 p-6 rounded-[2rem] shadow-xl border border-base-300">
+                    <div className="lg:col-span-2 bg-base-100 p-6 rounded-4xl shadow-xl border border-base-300">
                         <h2 className="text-2xl font-black mb-6">Tus Productos</h2>
                         <div className="overflow-x-auto">
                             <table className="table w-full">
@@ -218,7 +226,7 @@ export const StorePanelPage = () => {
                 {/* 💡 8. EL MODAL FLOTANTE (Con título y form dinámicos) */}
                 {isModalOpen && (
                     <div className="modal modal-open bg-black/10 backdrop-blur-md transition-all">
-                        <div className="modal-box rounded-[2rem] shadow-2xl">
+                        <div className="modal-box rounded-4xl shadow-2xl">
                             {/* El título cambia si estamos editando o creando */}
                             <h3 className="font-black text-2xl mb-6 text-jungle_teal">
                                 {editingId ? "Editar Producto" : "Añadir Nuevo Producto"}

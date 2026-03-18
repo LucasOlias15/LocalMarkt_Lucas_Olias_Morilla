@@ -6,6 +6,7 @@ import { Products } from './pages/Products';
 import { ShopDetail } from './pages/ShopDetail';
 import { LoginPage } from './pages/LoginPage';
 import { StorePanelPage } from './pages/StorePanelPage'; 
+import { Profile } from './pages/Profile';
 
 function App() {
   return (
@@ -25,6 +26,9 @@ function App() {
 
         {/* 5. Ruta de login */}
         <Route path="/login" component={LoginPage} />
+
+        {/* 7. Ruta de perfil */}
+        <Route path="/perfil" component={Profile} />
 
         {/* 6. Panel de gestión de la tienda (solo para el dueño) */}
         <Route path="/panel-tienda/:id" component={StorePanelPage} />

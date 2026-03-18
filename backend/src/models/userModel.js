@@ -41,4 +41,24 @@ async function createUser(nombre, email, clave, ubicacion) {
     }
 }
 
-export { getUserByEmail, createUser, getUserById };
+async function updateUserInfo(id, campos) {
+    try {
+        const keys = Object.keys(campos); 
+        
+        const setQuery = keys.map(key => `${key} = ?`).join(", ");
+        
+        const values = [...Object.values(campos), id];
+
+        const [result] = await pool.query(
+            `UPDATE usuario SET ${setQuery} WHERE id_usuario = ?`, 
+            values
+        );
+        
+        return result;
+    } catch (error) {
+        console.error('Error al actualizar el usuario:', error);
+        throw error;
+    }
+}
+
+export { getUserByEmail, createUser, getUserById , updateUserInfo};

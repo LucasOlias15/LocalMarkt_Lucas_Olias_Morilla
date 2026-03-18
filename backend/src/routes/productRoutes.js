@@ -7,6 +7,7 @@ import {
     eliminarProducto
 } from "../controllers/productoController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { uploadImage } from "../middlewares/cloudinary.js"; 
 
 const router = Router();
 
@@ -17,5 +18,7 @@ router.get("/comercio/:id_comercio", obtenerProductosPorComercio);
 router.put("/:id_producto", authMiddleware, actualizarProducto);
 router.get("/:id_producto", obtenerProductoPorId);
 router.delete("/:id_producto", authMiddleware, eliminarProducto);
+router.post("/registrar", authMiddleware, uploadImage.single('imagen'), registrarProducto);
+router.put("/actualizar/:id_producto", authMiddleware, uploadImage.single('imagen'), actualizarProducto);
 
 export default router;

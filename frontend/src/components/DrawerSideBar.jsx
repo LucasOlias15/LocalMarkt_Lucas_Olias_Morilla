@@ -3,6 +3,9 @@ export const DrawerSideBar = ({ children }) => {
         <div className="drawer">
             <input id="my-drawer" type="checkbox" className="drawer-toggle" />
 
+            {/* TODO Cambiar el menú de un despliegue lateral a un despliegue superior (como el de Amazon) 
+            para que sea más accesible en móvil. */}
+
             <div className="drawer-content">
                 {/* IMPORTANTE: No ponemos flex-col aquí. 
                    El Header será el primer hijo y podrá ser sticky 

@@ -1,4 +1,4 @@
-import { getUserByEmail, createUser, getUserById } from "../models/userModel.js";
+import { getUserByEmail, createUser, getUserById , updateUserInfo} from "../models/userModel.js";
 import { getComercioByUsuarioId } from "../models/comercioModel.js";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
@@ -111,5 +111,67 @@ export const obtenerPerfil = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: "Error al obtener el perfil" });
+    }
+};
+
+
+export const actualizarPerfil = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { nombre, email, clave, nuevaClave, ubicacion } = req.body;
+
+        // 1. Obtener datos actuales del usuario
+        const user = await getUserById(userId);
+        if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+        // 2. SEGURIDAD: Validar contraseña actual
+        const comprobarClave = await bcrypt.compare(clave, user.contraseña);
+        if (!comprobarClave) {
+            return res.status(401).json({ error: "La contraseña actual es incorrecta" });
+        }
+
+        // 3. VALIDACIÓN: ¿El nuevo email está libre?
+        // Solo comprobamos si el email que envía es distinto al que ya tiene
+        if (email && email !== user.email) {
+            const emailOcupado = await getUserByEmail(email);
+            if (emailOcupado) {
+                return res.status(400).json({ error: "El nuevo email ya está en uso por otra cuenta" });
+            }
+        }
+
+        // 4. PREPARAR CAMPOS (Dinámico)
+        const campos = {};
+        if (nombre) campos.nombre = nombre;
+        if (email) campos.email = email;
+        if (ubicacion) campos.ubicacion_aproximada = ubicacion;
+
+        if (nuevaClave) {
+            campos.contraseña = await bcrypt.hash(nuevaClave, 10);
+        }
+
+        if (Object.keys(campos).length === 0) {
+            return res.status(400).json({ error: "No se han enviado cambios" });
+        }
+
+        // 5. EJECUTAR Y RESPONDER CON DATOS NUEVOS
+        await updateUserInfo(userId, campos);
+
+        // Buscamos los datos actualizados para que el Front los guarde en el localStorage
+        const userActualizado = await getUserById(userId);
+
+        res.json({ 
+            message: "Perfil actualizado con éxito",
+            user: {
+                id: userActualizado.id_usuario,
+                nombre: userActualizado.nombre,
+                email: userActualizado.email,
+                ubicacion: userActualizado.ubicacion_aproximada,
+                rol: req.user.rol // El rol lo mantenemos del token original
+            }
+        });
+
+    } catch (error) {
+        console.error("Error al actualizar perfil:", error);
+        res.status(500).json({ error: "Error interno del servidor al actualizar" });
     }
 };

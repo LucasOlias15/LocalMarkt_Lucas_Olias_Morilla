@@ -21,7 +21,7 @@ const totalItems = useCartStore((state) => state.getTotalItems());
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] cursor-pointer"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-200 cursor-pointer"
           />
 
           {/* 2. PANEL LATERAL */}
@@ -30,7 +30,7 @@ const totalItems = useCartStore((state) => state.getTotalItems());
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-base-100 shadow-[-20px_0_50px_rgba(0,0,0,0.2)] z-[201] flex flex-col border-l border-base-200"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-base-100 shadow-[-20px_0_50px_rgba(0,0,0,0.2)] z-201 flex flex-col border-l border-base-200"
           >
             {/* Cabecera del Carrito */}
             <div className="p-8 flex justify-between items-center border-b border-base-200">
@@ -61,7 +61,7 @@ const totalItems = useCartStore((state) => state.getTotalItems());
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {/* 💡 Hacemos un map() para pintar CADA producto del carrito */}
                 {cart.map(item => (
-                  <div key={item.id_producto} className="group bg-base-200/50 p-4 rounded-[2rem] border border-transparent hover:border-jungle_teal/30 transition-all flex gap-4 items-center">
+                  <div key={item.id_producto} className="group bg-base-200/50 p-4 rounded-4xl border border-transparent hover:border-jungle_teal/30 transition-all flex gap-4 items-center">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-md shrink-0">
                       <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
                     </div>
@@ -120,7 +120,7 @@ const totalItems = useCartStore((state) => state.getTotalItems());
 
               <button 
                 disabled={cart.length === 0} 
-                className="cursor-pointer w-full bg-jungle_teal hover:bg-sea_green disabled:bg-base-300 disabled:text-base-content/30 text-white font-black py-5 rounded-[2rem] text-lg shadow-xl shadow-jungle_teal/20 disabled:shadow-none transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="cursor-pointer w-full bg-jungle_teal hover:bg-sea_green disabled:bg-base-300 disabled:text-base-content/30 text-white font-black py-5 rounded-4xl text-lg shadow-xl shadow-jungle_teal/20 disabled:shadow-none transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 Finalizar pedido
                 <span className="text-xl">➔</span>

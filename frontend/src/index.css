@@ -138,7 +138,7 @@
 /* 2. MODO OSCURO (Fondo Amarillo, Letras Verdes, Botón Verde) */
 [data-theme="dark"] .banner-container {
   /* Usamos lime_moss y yellow para un degradado cítrico espectacular */
-  background: linear-gradient(to bottom right, var(--color-lime_moss), var(--color-yellow-500)); 
+  background: linear-gradient(to bottom right, var(--color-yellow-500), var(--color-green-800)); 
   color: var(--color-jungle_teal-200);
 }
 [data-theme="dark"] .banner-btn-main {
