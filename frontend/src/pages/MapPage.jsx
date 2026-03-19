@@ -25,7 +25,7 @@ const MapPin = ({ type }) => {
         className="absolute w-8 h-8 rounded-full shadow-xl border-4 border-white"
         style={{ background: color }}
       />
-      <div className="absolute w-3 h-3 bg-white rounded-full shadow-inner"/>
+      <div className="absolute w-3 h-3 bg-white rounded-full shadow-inner" />
     </div>
   );
 };
@@ -78,12 +78,12 @@ export const MapPage = () => {
       }));
 
       setShops(mapped);
-      
+
       // Si no hay búsqueda, centramos el mapa en la primera tienda que cargue de la base de datos
       if (mapped.length > 0 && !searchQuery) {
         setMapCenter(mapped[0].coords);
       }
-      
+
       setLoading(false);
     };
 
@@ -144,12 +144,12 @@ export const MapPage = () => {
   const zoomOut = () => setZoomLevel((z) => Math.max(z - 1, 5));
 
   return (
-    <div className="w-full min-h-screen bg-base-100 pb-32">
+    <div className="w-full min-h-screen bg-base-100 pb-10">
 
       {/* ---------------- HERO (ESTILO ORIGINAL ARCHIVO 1) ---------------- */}
       <section className="w-full max-w-7xl mx-auto px-8 md:px-16 pt-32 pb-16 overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8">
         <div className="w-full lg:w-3/5 text-left z-10">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, x: -100 }}
             whileInView={{ opacity: 1, x: 0 }}
             className="text-6xl md:text-8xl lg:text-9xl font-black text-base-content leading-[1.05] tracking-tighter"
@@ -171,12 +171,12 @@ export const MapPage = () => {
               <p className="font-bold text-base-content">Tiendas activas en tu zona</p>
             </div>
             <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Ej: Panadería..." 
+              <input
+                type="text"
+                placeholder="Ej: Panadería..."
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
-                className="w-full bg-base-200/80 px-6 py-4 rounded-2xl focus:outline-none text-base-content placeholder:text-base-content/50" 
+                className="w-full bg-base-200/80 px-6 py-4 rounded-2xl focus:outline-none text-base-content placeholder:text-base-content/50"
               />
             </div>
           </motion.div>
@@ -192,16 +192,16 @@ export const MapPage = () => {
       </section>
 
       {/* ---------------- MAPA (ESTILO Y LÓGICA ARCHIVO 2) ---------------- */}
-      <section className="w-full max-w-7xl mx-auto px-6 mb-24">
+      <section className="w-full max-w-7xl mx-auto px-6 mb-10 mt-20">
         <div className="relative w-full h-175 rounded-[3rem] overflow-hidden shadow-2xl bg-base-200">
 
           {/* FILTROS */}
           <div className="absolute top-6 left-1/2 -translate-x-1/2 z-100 w-full max-w-md px-4">
             <div className="bg-white/80 backdrop-blur-xl p-2 rounded-2xl shadow-xl flex gap-2 overflow-x-auto no-scrollbar">
-              {["Todos","Frutería","Panadería","Carnicería","Bio"].map((cat)=> (
+              {["Todos", "Frutería", "Panadería", "Carnicería", "Bio"].map((cat) => (
                 <button
                   key={cat}
-                  onClick={()=>setFilter(cat)}
+                  onClick={() => setFilter(cat)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all
                   ${filter === cat ? "bg-jungle_teal text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                 >
@@ -236,16 +236,16 @@ export const MapPage = () => {
           </MapContainer>
 
           {/* CONTROLES */}
-<div className="absolute right-6 top-24 flex flex-col gap-3 z-100">            <button
-              onClick={handleGeoLocation}
-              className="w-12 h-12 rounded-xl bg-jungle_teal text-white shadow-lg hover:scale-110 transition flex items-center justify-center"
-              title="Mi ubicación"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-              </svg>
-            </button>
+          <div className="absolute right-6 top-24 flex flex-col gap-3 z-100">            <button
+            onClick={handleGeoLocation}
+            className="w-12 h-12 rounded-xl bg-jungle_teal text-white shadow-lg hover:scale-110 transition flex items-center justify-center"
+            title="Mi ubicación"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+          </button>
 
             <button
               onClick={zoomIn}
@@ -264,11 +264,11 @@ export const MapPage = () => {
 
           {/* LEYENDA */}
           <div className="absolute bottom-6 left-6 z-100 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 space-y-2 text-sm font-medium">
-            {Object.entries(categoryColors).map(([cat,color]) => {
-              if(cat === "default") return null;
+            {Object.entries(categoryColors).map(([cat, color]) => {
+              if (cat === "default") return null;
               return (
                 <div key={cat} className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded-full shadow-sm" style={{background:color}} />
+                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ background: color }} />
                   <span className="text-gray-700">{cat}</span>
                 </div>
               )
@@ -279,9 +279,9 @@ export const MapPage = () => {
           <AnimatePresence>
             {selectedShop && (
               <motion.div
-                initial={{ opacity:0, y:40 }}
-                animate={{ opacity:1, y:0 }}
-                exit={{ opacity:0, y:40 }}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 40 }}
                 className="absolute bottom-6 right-6 w-87.5 bg-white p-6 rounded-3xl shadow-2xl z-100"
               >
                 <img
@@ -301,7 +301,7 @@ export const MapPage = () => {
                   Entrar ➔
                 </Link>
                 <button
-                  onClick={()=>setSelectedShop(null)}
+                  onClick={() => setSelectedShop(null)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"
                 >
                   ✕
@@ -312,6 +312,57 @@ export const MapPage = () => {
 
         </div>
       </section>
+
+      <section className="py-12 md:py-16 px-4 max-w-7xl mx-auto w-full">
+    
+    <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-bright_fern to-jungle_teal pb-2 inline-block">
+            Explora tu barrio
+        </h2>
+        <p className="text-base-content/70 mt-4 max-w-2xl mx-auto text-lg font-medium">
+            Navega por el mapa interactivo y descubre los tesoros que los comerciantes locales tienen preparados para ti, a la vuelta de la esquina.
+        </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* TARJETA 1 - Ubicación (Jungle Teal) */}
+        <div className="bg-base-200/50 rounded-3xl p-8 border border-base-300 hover:border-jungle_teal/30 hover:shadow-lg transition-all group">
+            <div className="w-14 h-14 rounded-2xl bg-jungle_teal text-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
+            </div>
+            <h3 className="text-xl font-bold text-base-content mb-3">Encuentra lo más cercano</h3>
+            <p className="text-base-content/60">Localiza tiendas, panaderías y mercados a pocos pasos de tu ubicación actual.</p>
+        </div>
+
+        {/* TARJETA 2 - Variedad (Yellow) */}
+        <div className="bg-base-200/50 rounded-3xl p-8 border border-base-300 hover:border-yellow-400/50 hover:shadow-lg transition-all group">
+            {/* Usamos text-yellow-900 para asegurar el contraste sobre el fondo amarillo */}
+            <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-yellow-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
+                </svg>
+            </div>
+            <h3 className="text-xl font-bold text-base-content mb-3">Gran variedad local</h3>
+            <p className="text-base-content/60">Filtra rápidamente por categorías para encontrar exactamente lo que necesitas hoy.</p>
+        </div>
+
+        {/* TARJETA 3 - Comunidad (Sea Green) */}
+        <div className="bg-base-200/50 rounded-3xl p-8 border border-base-300 hover:border-sea_green/40 hover:shadow-lg transition-all group">
+            <div className="w-14 h-14 rounded-2xl bg-sea_green text-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+            </div>
+            <h3 className="text-xl font-bold text-base-content mb-3">Apoya tu comunidad</h3>
+            <p className="text-base-content/60">Cada compra fortalece la economía de tu barrio y fomenta el comercio sostenible.</p>
+        </div>
+
+    </div>
+</section>
     </div>
   );
 };

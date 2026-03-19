@@ -117,7 +117,7 @@ const response = await fetch(`http://localhost:3000/api/users/perfil`, {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-sea_green/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="avatar z-10">
-            <div className="w-32 h-32 rounded-[2.5rem] p-1.5 bg-gradient-to-tr from-jungle_teal to-bright_fern shadow-xl">
+            <div className="w-32 h-32 rounded-[2.5rem] p-1.5 bg-linear-to-tr from-jungle_teal to-bright_fern shadow-xl">
               <div className="w-full h-full rounded-[2.2rem] bg-base-100 flex items-center justify-center">
                 {user.rol === 'dueño' ? (
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-base-content opacity-90 drop-shadow-sm">

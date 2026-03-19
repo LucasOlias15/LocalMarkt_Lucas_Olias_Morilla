@@ -184,3 +184,19 @@
   color: #ffffff !important;
   stroke: #ffffff !important;
 }
+
+/* --- ESTILOS DEL BOTÓN DE CATEGORÍA ACTIVO --- */
+
+/* MODO CLARO (Verde oscuro corporativo) */
+.btn-categoria-activo {
+  background-color: var(--color-jungle_teal-300);
+  color: #ffffff;
+  border-color: var(--color-jungle_teal-300);
+}
+
+/* MODO OSCURO (Amarillo neón suave) */
+[data-theme="dark"] .btn-categoria-activo {
+  background-color: rgba(238, 239, 32, 0.15); /* Tu yellow-500 con transparencia */
+  color: var(--color-yellow-400);
+  border-color: rgba(238, 239, 32, 0.3);
+}

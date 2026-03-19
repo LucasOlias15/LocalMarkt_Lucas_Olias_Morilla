@@ -7,6 +7,7 @@ import { ShopDetail } from './pages/ShopDetail';
 import { LoginPage } from './pages/LoginPage';
 import { StorePanelPage } from './pages/StorePanelPage'; 
 import { Profile } from './pages/Profile';
+import { ExplorePage } from './pages/ExplorePage';
 
 function App() {
   return (
@@ -32,6 +33,9 @@ function App() {
 
         {/* 6. Panel de gestión de la tienda (solo para el dueño) */}
         <Route path="/panel-tienda/:id" component={StorePanelPage} />
+
+        {/* 7. Ruta para mostrar productos y tiendas completos ,  con filtros y búsqueda*/}
+        <Route path="/explorar" component={ExplorePage}/>
 
         {/* Ruta 404: Captura errores de URL */}
           <Route>
