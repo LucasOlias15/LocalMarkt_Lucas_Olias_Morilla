@@ -1,6 +1,7 @@
 import { UserKey, UserRoundKey } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
+import { UserRoundCog } from "lucide-react";
 
 //TODO Añadir funcionalidad de botones y menú de datos personales, cerrar sesión, acceder al panel de gestión (si es dueño), etc.
 
@@ -197,23 +198,29 @@ const response = await fetch(`http://localhost:3000/api/users/perfil`, {
             </>
           ) : (
             <>
-              <div className="md:col-span-2 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-yellow-400/50 transition-all cursor-pointer group flex flex-col justify-between">
-                <div>
-                  <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-yellow-600 transition-colors">Historial de Pedidos</h2>
-                  <p className="text-base-content/60">Revisa el estado de tus compras recientes y descarga tus recibos.</p>
-                </div>
-                <div className="mt-8 flex justify-end">
-                  <span className="text-sm font-bold text-yellow-700 uppercase tracking-widest bg-yellow-400/20 px-4 py-2 rounded-xl group-hover:bg-yellow-400 group-hover:text-yellow-900 transition-colors">
-                    Ver pedidos -&gt;
-                  </span>
-                </div>
-              </div>
+              <div className="md:col-span-2 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/50 transition-all cursor-pointer group flex flex-col justify-between">
+    <div>
+        <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-jungle_teal transition-colors">
+            Historial de Pedidos
+        </h2>
+        <p className="text-base-content/60">Revisa el estado de tus compras recientes y descarga tus recibos.</p>
+    </div>
+    <div className="mt-8 flex justify-end">
+        <span className="text-sm font-bold text-jungle_teal uppercase tracking-widest bg-jungle_teal/10 px-4 py-2 rounded-xl group-hover:bg-jungle_teal group-hover:text-white transition-colors">
+            Ver pedidos -&gt;
+        </span>
+    </div>
+</div>
 
-              <div className="bg-yellow-400 text-yellow-900 rounded-[2.5rem] p-8 shadow-sm hover:bg-yellow-300 transition-colors cursor-pointer flex flex-col justify-center">
-                <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">Tus Favoritos</h2>
-                <div className="text-5xl font-black mb-1">3</div>
-                <p className="text-yellow-900/70 text-sm font-medium">Comercios guardados</p>
-              </div>
+             <div className="bg-jungle_teal text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-jungle_teal/90 transition-colors cursor-pointer flex flex-col justify-center">
+    <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">
+        Tus Favoritos
+    </h2>
+    <div className="text-5xl font-black mb-1">3</div>
+    <p className="text-white/80 text-sm font-medium">
+        Comercios guardados
+    </p>
+</div>
             </>
           )}
 

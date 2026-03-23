@@ -74,6 +74,7 @@ async function getAllProductosWithComercio() {
                 p.precio, 
                 p.imagen, 
                 p.descripcion,
+                p.stock,
                 c.nombre AS nombre_comercio, 
                 c.categoria
             FROM producto p

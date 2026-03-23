@@ -250,6 +250,7 @@ const handleSaveProduct = async (e) => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="bg-base-100 p-6 rounded-4xl shadow-xl border border-base-300 h-fit">
+                        {/* TODO Cambiar imagen generica por imagen de ese comercio */}
                         <img src={store?.imagen} className="w-full h-40 object-cover rounded-2xl mb-4" alt="Tienda" />
                         <h2 className="text-xl font-bold mb-2">{store?.nombre}</h2>
                         <span className="badge badge-outline border-jungle_teal text-jungle_teal font-bold mb-4">{store?.categoria}</span>

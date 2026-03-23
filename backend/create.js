@@ -67,11 +67,13 @@ const crearTablas = async () => {
     
     await pool.query(`
       CREATE TABLE favorito (
+        id_favorito INT AUTO_INCREMENT PRIMARY KEY,
         id_usuario INT NOT NULL,
-        id_comercio INT NOT NULL,
-        PRIMARY KEY (id_usuario, id_comercio),
+        id_comercio INT NULL,
+        id_producto INT NULL,
         FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE,
-        FOREIGN KEY (id_comercio) REFERENCES comercio(id_comercio) ON DELETE CASCADE
+        FOREIGN KEY (id_comercio) REFERENCES comercio(id_comercio) ON DELETE CASCADE,
+        FOREIGN KEY (id_producto) REFERENCES producto(id_producto) ON DELETE CASCADE
       )
     `);
 

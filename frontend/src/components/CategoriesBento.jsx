@@ -108,7 +108,7 @@ const CategoryCard = ({ span = "", title, desc, img ,href}) => (
       />
       
       {/* OVERLAY OSCURO (Para que el texto destaque) */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300"></div>
+      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300"></div>
 
       <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
 

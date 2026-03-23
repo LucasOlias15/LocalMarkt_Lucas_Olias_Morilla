@@ -33,6 +33,7 @@ export const TopMenuLayout = ({ children }) => {
                         </div>
                         <li><a href="/" className="text-lg font-medium hover:text-jungle_teal"><House/> Inicio</a></li>
                         {/*TODO Enlazar href para productos del usuario logueado y href a mis compras en caso de haber compras */}
+                        {/*TODO Ocultar o eliminar este apartado si esta logueado como usuario base*/}
                         <li><a href="/tienda/:id"className="text-lg font-medium hover:text-jungle_teal"><PackageSearch/> Mis Productos</a></li>
                         <li><a className="text-lg font-medium hover:text-jungle_teal"><ShoppingBag/> Mis Compras</a></li>
                         <div className="divider"></div>

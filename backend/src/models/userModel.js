@@ -23,14 +23,14 @@ async function getUserById(userId) {
     }
 }
 
-async function createUser(nombre, email, clave, ubicacion) {
+async function createUser(nombre, email, clave, ubicacion, rol = "cliente" ) {
     try {
         // Se guarda el nuevo usuario en la base de datos y se obtiene el ID generado automáticamente
         const [result] = await pool.query(
             // Nota: 'rol' no lo ponemos porque tiene un DEFAULT ‘cliente’ en la BD
             
-            'INSERT INTO usuario (nombre, email, contraseña, ubicacion_aproximada) VALUES (?, ?, ?, ?)',
-            [nombre, email, clave, ubicacion]
+            'INSERT INTO usuario (nombre, email, contraseña, ubicacion_aproximada, rol) VALUES (?, ?, ?, ?, ?)',
+            [nombre, email, clave, ubicacion, rol]
         );
         // El resultado de la consulta de inserción contiene información sobre la operación,
         // incluyendo el ID del nuevo usuario generado automáticamente por la base de datos.

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { PanelTopOpen, Search, ShoppingBasket, Store } from "lucide-react";
+import { PanelTopOpen, Search, ShoppingBasket, Store, Heart } from "lucide-react";
 
 export const ExplorePage = () => {
     // 1. Estados de Datos
@@ -27,7 +27,7 @@ export const ExplorePage = () => {
         if (palabraBuscada) {
             setSearchQuery(palabraBuscada);
             setViewMode("todos");
-        }else if (categoriaBuscada){
+        } else if (categoriaBuscada) {
             setSelectedCategory(categoriaBuscada);
             setViewMode("todos");
 
@@ -133,10 +133,11 @@ export const ExplorePage = () => {
                     {!sinResultados && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Render COMERCIOS (Si el modo de vista lo permite) */}
+                            {/* TODO Funcionalidad clickar en tienda y redrigir a esa tienda */}
                             {(viewMode === "tiendas" || viewMode === "todos") && filteredShops.map((shop) => (
                                 <div key={`shop-${shop.id_comercio}`} className="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-all rounded-3xl">
                                     <figure className="h-50 bg-base-200 overflow-hidden rounded-t-3xl">
-                                        <img className="w-full h-full object-cover"  src={shop.imagen}/>    
+                                        <img className="w-full h-full object-cover" src={shop.imagen} />
                                     </figure>
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">{shop.nombre}</h2>
@@ -149,13 +150,37 @@ export const ExplorePage = () => {
                             {/* Render PRODUCTOS (Si el modo de vista lo permite) */}
                             {(viewMode === "productos" || viewMode === "todos") && filteredProducts.map((product) => (
                                 <div key={`prod-${product.id_producto}`} className="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-all rounded-3xl">
-                                    <figure className="h-32 bg-base-200 overflow-hidden rounded-t-3xl">
+
+                                    {/* 👇 CAMBIO: Añadimos 'relative' al figure 👇 */}
+                                    <figure className="h-32 bg-base-200 overflow-hidden rounded-t-3xl relative">
                                         <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover" />
+
+                                        {/* 👇 NUEVO: Botón de Favorito flotante 👇 */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault(); // Por si la tarjeta entera fuera un enlace
+                                                console.log("¡Clic en favorito! Producto ID:", product.id_producto);
+                                                // Aquí llamaremos a la función del backend más adelante
+                                            }}
+                                            className="absolute top-2 right-2 p-1.5 bg-base-100/80 backdrop-blur-sm rounded-full text-base-content/50 hover:text-red-500 hover:bg-base-100 transition-all shadow-sm z-10"
+                                        >
+                                            {/* Cuando esté guardado, le añadiremos fill="currentColor" para que se pinte por dentro */}
+                                            <Heart size={18} />
+                                        </button>
                                     </figure>
+
                                     <div className="card-body p-4">
-                                        <h2 className="card-title text-base">{product.nombre}</h2>
+                                        <div className="flex justify-between items-start w-full gap-4 mb-2">
+                                            <h2 className="card-title text-base m-0 leading-tight">{product.nombre}</h2>
+                                            <p className="text-xs font-bold opacity-60 m-0 shrink-0 whitespace-nowrap pt-1">
+                                                Stock: {product.stock}
+                                            </p>
+                                        </div>
+
+                                        <p className="text-xs italic">{product.descripcion}</p>
                                         <div className="flex justify-between items-center mt-2">
                                             <span className="font-bold text-jungle_teal">{product.precio}€</span>
+                                            {/* TODO Funcionalidad boton de añadir productos */}
                                             <button className="btn btn-xs bg-jungle_teal text-white border-none rounded-full px-4 hover:bg-jungle_teal/90">Añadir</button>
                                         </div>
                                     </div>

@@ -20,16 +20,24 @@ async function seed() {
      console.log('Tablas limpiadas todo OK');
 
      // 2. CREAR USUARIOS
+     // 2.1 USUARIOS DUEÑOS DE COMERCIOS (Pasamos 'dueño' como 5º parámetro)
      const claveHash = await bcrypt.hash('123456', 10);
-     const idRegina = await createUser('Salvatore (Ortofrutta)', 'salvatore@regina.com', claveHash, 'Alcamo Centro');
-     const idLucia = await createUser('Antonina (Panificio)', 'antonina@santalucia.com', claveHash, 'Alcamo Sud');
-     const idNicolo = await createUser('Nicolò (Macelleria)', 'nicolo@renda.com', claveHash, 'Alcamo Nord');
-     const idAlessandro = await createUser('Alessandro (Vivaio)', 'alessandro@perez.com', claveHash, 'Alcamo Est');
+     const idRegina = await createUser('Salvatore (Ortofrutta)', 'salvatore@regina.com', claveHash, 'Alcamo Centro', 'dueño');
+     const idLucia = await createUser('Antonina (Panificio)', 'antonina@santalucia.com', claveHash, 'Alcamo Sud', 'dueño');
+     const idNicolo = await createUser('Nicolò (Macelleria)', 'nicolo@renda.com', claveHash, 'Alcamo Nord', 'dueño');
+     const idAlessandro = await createUser('Alessandro (Vivaio)', 'alessandro@perez.com', claveHash, 'Alcamo Est', 'dueño');
+     const idGiulia = await createUser('Giulia (Sartoria)', 'giulia@sartoria.com', claveHash, 'Alcamo Ovest', 'dueño');
+     const idMatteo = await createUser('Matteo (Ceramiche)', 'matteo@ceramiche.com', claveHash, 'Alcamo Centro Storico', 'dueño');
+
+     // 2.2 USUARIOS BASE (No pasamos 5º parámetro, la función usará 'cliente' por defecto)
+     const claveHashBase1 = await bcrypt.hash('PPPPPP', 10);
+     const claveHashBase2 = await bcrypt.hash('MMMMMM', 10);
      
-     // 👇 NUEVOS USUARIOS 👇
-     const idGiulia = await createUser('Giulia (Sartoria)', 'giulia@sartoria.com', claveHash, 'Alcamo Ovest');
-     const idMatteo = await createUser('Matteo (Ceramiche)', 'matteo@ceramiche.com', claveHash, 'Alcamo Centro Storico');
-     
+     // Nota: Como 'createUser' devuelve un ID (que es una promesa), es buena práctica poner el 'await',
+     // aunque no vayamos a usar esos IDs para crearles comercios.
+     await createUser('Pedro Giménez', 'pedro@gimenez.com', claveHashBase1, 'Mi ubicación');
+     await createUser('Marta Gutierrez', 'marta@gutierrez.com', claveHashBase2, 'Mi ubicación');
+
      console.log(' Usuarios creados OK.');
 
      // 3. CREAR COMERCIOS DE ALCAMO
@@ -54,17 +62,16 @@ async function seed() {
          'Bio', '0924 03942', 'Via Vittorio Veneto 269, Alcamo (TP)', '37.97787658797134', '12.96656156454616', 'https://res.cloudinary.com/defaik2fl/image/upload/v1774004567/timothy-hales-bennett-An0uaO4IhcQ-unsplash_kjtfdr.jpg'
      );
 
-     // 👇 NUEVOS COMERCIOS 👇
      const idComercio5 = await createComercio(
          "Sartoria Giulia", idGiulia, 
          'Capi d\'abbigliamento sartoriali e tessuti locali lavorati a mano con passione.', 
-         'Textiles y moda', '328 4591230', 'Corso VI Aprile 152, Alcamo (TP)', '37.9790', '12.9635', "https://res.cloudinary.com/defaik2fl/image/upload/v1774258787/eddie-pipocas--y93T9OCD34-unsplash_nre2wj.jpg" // <-- Pon aquí la foto de la tienda
+         'Textiles y moda', '328 4591230', 'Corso VI Aprile 152, Alcamo (TP)', '37.9790', '12.9635', "https://res.cloudinary.com/defaik2fl/image/upload/v1774258787/eddie-pipocas--y93T9OCD34-unsplash_nre2wj.jpg" 
      );
      
      const idComercio6 = await createComercio(
          "Ceramiche Artistiche Matteo", idMatteo, 
          'Ceramiche tradizionali siciliane dipinte a mano, perfette per decorare la tua casa o per un regalo speciale.', 
-         'Artesanía y regalos', '331 9084756', 'Piazza Ciullo 12, Alcamo (TP)', '37.9805', '12.9642', "https://res.cloudinary.com/defaik2fl/image/upload/v1774258787/zoshua-colah-o1VwLwV4r7Y-unsplash_f29irl.jpg" // <-- Pon aquí la foto de la tienda
+         'Artesanía y regalos', '331 9084756', 'Piazza Ciullo 12, Alcamo (TP)', '37.9805', '12.9642', "https://res.cloudinary.com/defaik2fl/image/upload/v1774258787/zoshua-colah-o1VwLwV4r7Y-unsplash_f29irl.jpg" 
      );
 
      console.log('Comercios de Alcamo registrados OK');
@@ -90,8 +97,6 @@ async function seed() {
      await createProducto(idComercio4, 'Pianta di Limone in Vaso', 'Albero di limone ornamentale, perfetto per balconi e terrazzi.', 10, 35.00, 'https://res.cloudinary.com/defaik2fl/image/upload/v1774002711/ildar-garifullin-uz0Q5euY4Ow-unsplash_vzwa1t.jpg');
      await createProducto(idComercio4, 'Gelsomino Siciliano', 'Pianta rampicante molto profumata con fiori bianchi a stella.', 20, 12.50, 'https://res.cloudinary.com/defaik2fl/image/upload/v1774002712/dl314-lin-50GT6tNMobs-unsplash_pbryu8.jpg');
      await createProducto(idComercio4, 'Set Erbe Aromatiche', 'Tris di vasi con timo, rosmarino e origano fresco.', 30, 9.00, 'https://res.cloudinary.com/defaik2fl/image/upload/v1774002711/samuel-toh-ICUH7gCnwr4-unsplash_nv6lmc.jpg');
-
-     // 👇 NUEVOS PRODUCTOS 👇
      
      // --> Productos Textiles y Moda (Comercio 5)
      await createProducto(idComercio5, 'Borsa in Tessuto Naturale', 'Borsa capiente realizzata a mano con cotone 100% biologico.', 12, 45.00, "https://res.cloudinary.com/defaik2fl/image/upload/v1774259314/raghavendra-v-konkathi-bA6_iNYP3CM-unsplash_fhxciw.jpg");
