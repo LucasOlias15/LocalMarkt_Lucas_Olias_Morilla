@@ -84,7 +84,7 @@ const toggleTheme = (e) => {
 
     return (
         <>
-<header className="navbar bg-base-100/80 backdrop-blur-md shadow-sm px-4 sticky top-0 z-[200] h-20 transition-all duration-300 border-b border-base-200/50">
+<header className="navbar bg-base-100/80 backdrop-blur-md shadow-sm px-4 sticky top-0 z-200 h-20 transition-all duration-300 border-b border-base-200/50">
                 {/* Izquierda: Drawer (Menú) */}
                 <div className="navbar-start">
                     <div className="flex items-center pl-2">

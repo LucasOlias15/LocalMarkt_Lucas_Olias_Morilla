@@ -27,11 +27,11 @@ export const StorePanelPage = () => {
 
     // Estado para toast de eroor
     const mostrarNotificacion = (mensaje, tipo = "success") => {
-    setToast({ mensaje, tipo });
-    setTimeout(() => {
-        setToast(null);
-    }, 3000); // 3000 milisegundos = 3 segundos
-};
+        setToast({ mensaje, tipo });
+        setTimeout(() => {
+            setToast(null);
+        }, 3000); // 3000 milisegundos = 3 segundos
+    };
 
     // Estados para controlar el modal y el formulario de añadir/editar producto
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,39 +64,38 @@ export const StorePanelPage = () => {
     }, [storeId]);
 
     // 💡 3. FUNCIÓN ELIMINAR (Borra en backend y actualiza frontend)
-const handleDeleteProduct = async (productId) => {
-    //TODO lo de aqui abajo
-    // Nota: El 'confirm' nativo lo dejamos por ahora porque detiene la ejecución 
-    // y es útil, pero en un futuro podrías cambiarlo por un Modal de DaisyUI 😉
-    if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) return;
+    const handleDeleteProduct = async (productId) => {
+        //TODO lo de aqui abajo
+        // Nota: El 'confirm' nativo lo dejamos por ahora porque detiene la ejecución 
+        // y es útil, pero en un futuro podrías cambiarlo por un Modal de DaisyUI 😉
+        if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) return;
 
-    try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3000/api/productos/${productId}`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-        });
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`http://localhost:3000/api/productos/${productId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+            });
 
-        if (res.ok) {
+            if (res.ok) {
             // Eliminamos el producto de la lista en pantalla
-            setProducts(products.filter(p => p.id_producto !== productId));
-            
-            // 👇 ADIÓS ALERT, HOLA TOAST 👇
-            mostrarNotificacion("Producto eliminado correctamente", "success");
-        } else {
-            // 👇 ADIÓS ALERT, HOLA TOAST 👇
-            mostrarNotificacion("Error al eliminar el producto", "error");
+                setProducts(products.filter(p => p.id_producto !== productId));
+
+            // Gestionamos los errores con el TOAST mostrarNotificacion
+                mostrarNotificacion("Producto eliminado correctamente", "success");
+            } else {
+                mostrarNotificacion("Error al eliminar el producto", "error");
+            }
+        } catch (error) {
+            console.error("Error en la petición:", error);
+
+            // En caso de fallo mostrar toast genérico
+            mostrarNotificacion("Error de conexión al intentar eliminar", "error");
         }
-    } catch (error) {
-        console.error("Error en la petición:", error);
-        
-        // 👇 NOTIFICACIÓN EXTRA POR SI FALLA LA CONEXIÓN 👇
-        mostrarNotificacion("Error de conexión al intentar eliminar", "error");
-    }
-};
+    };
 
     // 💡 4. ABRIR MODALES (Preparar el estado antes de abrir)
     const handleOpenAdd = () => {
@@ -118,103 +117,103 @@ const handleDeleteProduct = async (productId) => {
         setIsModalOpen(true);
     };
 
+
     // 💡 5. FUNCIÓN GUARDAR INTELIGENTE (Sirve para Añadir y Editar)
-   // 💡 5. FUNCIÓN GUARDAR INTELIGENTE (Sirve para Añadir y Editar)
-const handleSaveProduct = async (e) => {
-    e.preventDefault();
+    const handleSaveProduct = async (e) => {
+        e.preventDefault();
 
-    // 1. Validaciones básicas
-    if (!newProduct.nombre || !newProduct.precio) {
-        mostrarNotificacion("Por favor, rellena los campos obligatorios.", "error");
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("nombre", newProduct.nombre);
-    formData.append("precio", newProduct.precio);
-    formData.append("descripcion", newProduct.descripcion);
-    formData.append("stock", newProduct.stock);
-    
-    // Le pasamos el ID del comercio que sacamos de la URL (params.id)
-    formData.append("id_comercio", storeId); 
-
-    if (imageFile) {
-        formData.append("imagen", imageFile);
-    } else if (!editingId) {
-        // Si estamos creando uno nuevo y no hay imagen, avisamos (opcional según tu lógica)
-        alert("Por favor, selecciona una imagen para el producto.");
-        return;
-    }
-
-    try {
-        const token = localStorage.getItem("token");
-        
-        // Decidimos si es POST (crear) o PUT (editar) basándonos en si hay editingId
-        const method = editingId ? "PUT" : "POST";
-        const url = editingId 
-            ? `http://localhost:3000/api/productos/actualizar/${editingId}`
-            : `http://localhost:3000/api/productos/registrar`;
-
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                "Authorization": `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            console.log("¡Éxito! Producto guardado:", data);
-            
-            // 🌟 LA MAGIA DE LA ACTUALIZACIÓN DINÁMICA 🌟
-            if (editingId) {
-                // Si estábamos EDITANDO: Buscamos el producto en el array y lo actualizamos
-                setProducts(products.map(p => p.id_producto === editingId ? {
-                    ...p, 
-                    nombre: newProduct.nombre,
-                    precio: newProduct.precio,
-                    descripcion: newProduct.descripcion,
-                    stock: newProduct.stock,
-                    // Si el backend nos devuelve la nueva URL de la imagen, la usamos. Si no, dejamos la que estaba.
-                    imagen: data.imagen || p.imagen 
-                } : p));
-            } else {
-                // Si estábamos CREANDO: Añadimos el nuevo producto al principio de la lista
-                // Usamos el ID y la imagen que nos acaba de devolver Cloudinary/el backend
-                const nuevoProductoFisico = {
-                    id_producto: data.id, 
-                    nombre: newProduct.nombre,
-                    precio: newProduct.precio,
-                    descripcion: newProduct.descripcion,
-                    stock: newProduct.stock,
-                    imagen: data.imagen,
-                    id_comercio: storeId
-                };
-                
-                // Lo ponemos el primero en el array (usamos spread operator [...])
-                setProducts([nuevoProductoFisico, ...products]);
-            }
-
-            // 3. Limpiamos y cerramos
-            setNewProduct({ nombre: "", precio: "", descripcion: "", stock: "", imagen: "" });
-            setImageFile(null);
-            setEditingId(null);
-            setIsModalOpen(false);
-
-            // Pequeño feedback visual
-            mostrarNotificacion(`Producto ${editingId ? 'actualizado' : 'añadido'} correctamente, "success"`);
-
-        } else {
-            console.error("Error del backend:", data.error);
-            mostrarNotificacion(data.error, "error");
+        // 1. Validaciones básicas
+        if (!newProduct.nombre || !newProduct.precio) {
+            mostrarNotificacion("Por favor, rellena los campos obligatorios.", "error");
+            return;
         }
-    } catch (error) {
-        console.error("Error de conexión:", error);
-        alert("Error de conexión al guardar el producto.");
-    }
-};
+
+        const formData = new FormData();
+        formData.append("nombre", newProduct.nombre);
+        formData.append("precio", newProduct.precio);
+        formData.append("descripcion", newProduct.descripcion);
+        formData.append("stock", newProduct.stock);
+
+        // Le pasamos el ID del comercio que sacamos de la URL (params.id)
+        formData.append("id_comercio", storeId);
+
+        if (imageFile) {
+            formData.append("imagen", imageFile);
+        } else if (!editingId) {
+            // Si estamos creando uno nuevo y no hay imagen, avisamos (opcional según tu lógica)
+            alert("Por favor, selecciona una imagen para el producto.");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+
+            // Decidimos si es POST (crear) o PUT (editar) basándonos en si hay editingId
+            const method = editingId ? "PUT" : "POST";
+            const url = editingId
+                ? `http://localhost:3000/api/productos/actualizar/${editingId}`
+                : `http://localhost:3000/api/productos/registrar`;
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("¡Éxito! Producto guardado:", data);
+
+                // 🌟 LA MAGIA DE LA ACTUALIZACIÓN DINÁMICA 🌟
+                if (editingId) {
+                    // Si estábamos EDITANDO: Buscamos el producto en el array y lo actualizamos
+                    setProducts(products.map(p => p.id_producto === editingId ? {
+                        ...p,
+                        nombre: newProduct.nombre,
+                        precio: newProduct.precio,
+                        descripcion: newProduct.descripcion,
+                        stock: newProduct.stock,
+                        // Si el backend nos devuelve la nueva URL de la imagen, la usamos. Si no, dejamos la que estaba.
+                        imagen: data.imagen || p.imagen
+                    } : p));
+                } else {
+                    // Si estábamos CREANDO: Añadimos el nuevo producto al principio de la lista
+                    // Usamos el ID y la imagen que nos acaba de devolver Cloudinary/el backend
+                    const nuevoProductoFisico = {
+                        id_producto: data.id,
+                        nombre: newProduct.nombre,
+                        precio: newProduct.precio,
+                        descripcion: newProduct.descripcion,
+                        stock: newProduct.stock,
+                        imagen: data.imagen,
+                        id_comercio: storeId
+                    };
+
+                    // Lo ponemos el primero en el array (usamos spread operator [...])
+                    setProducts([nuevoProductoFisico, ...products]);
+                }
+
+                // 3. Limpiamos y cerramos
+                setNewProduct({ nombre: "", precio: "", descripcion: "", stock: "", imagen: "" });
+                setImageFile(null);
+                setEditingId(null);
+                setIsModalOpen(false);
+
+                // Pequeño feedback visual
+                mostrarNotificacion(`Producto ${editingId ? 'actualizado' : 'añadido'} correctamente, "success"`);
+
+            } else {
+                console.error("Error del backend:", data.error);
+                mostrarNotificacion(data.error, "error");
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+            alert("Error de conexión al guardar el producto.");
+        }
+    };
 
     // 💡 6. SEGURIDAD (El "portero" de la página)
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -351,6 +350,6 @@ const handleSaveProduct = async (e) => {
             )}
         </div>
 
-        
+
     );
 };  

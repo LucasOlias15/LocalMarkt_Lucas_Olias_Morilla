@@ -34,7 +34,7 @@ const res = await fetch("http://localhost:3000/api/users/login", {
 // ¡Éxito! Guardamos el token en el navegador (localStorage)
       localStorage.setItem("token", data.token);
       
-      // ✨ EL FIX ESTÁ AQUÍ: Cambiamos data.usuario por data.user ✨
+      // Guardamos los datos del usuario en Localstorage user
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
       }

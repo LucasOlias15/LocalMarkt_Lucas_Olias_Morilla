@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { PanelTopOpen, Search, ShoppingBasket, Store, Heart } from "lucide-react";
+import { Link } from "wouter";
+import { PanelTopOpen, Search, ShoppingBasket, Store, Heart, SquareCheckBig } from "lucide-react";
+
 
 export const ExplorePage = () => {
     // 1. Estados de Datos
@@ -14,7 +16,14 @@ export const ExplorePage = () => {
     const [selectedCategory, setSelectedCategory] = useState("Todas");
     const [viewMode, setViewMode] = useState("tiendas");
 
+    // 3. Estado Toast 
+    const [toast, setToast] = useState(null);
+
+    // 4. Estado Favoritos
+    const [favoritos, setFavoritos] = useState([]);
+
     const categorias = ["Todas", "Frutería", "Panadería", "Carnicería", "Bio", "Textiles y moda", "Artesanía y regalos"];
+    const usuario = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
 
@@ -41,13 +50,27 @@ export const ExplorePage = () => {
                     fetch("http://localhost:3000/api/productos/explorar")
                 ]);
 
-                if (!resShops.ok || !resProducts.ok) throw new Error("Error en el servidor");
-
                 const dataShops = await resShops.json();
                 const dataProducts = await resProducts.json();
 
                 setShops(dataShops);
                 setProducts(dataProducts);
+
+                if (usuario) {
+                    const resFavs = await fetch(`http://localhost:3000/api/favoritos/${usuario.id}`);
+                    if (resFavs.ok) {
+                        const dataFavs = await resFavs.json();
+
+                        // Transformamos los objetos de la BD en un array de números limpios
+                        // Filtrando además los que sean null (por si ha guardado una tienda en vez de un producto)
+                        const idsFavoritos = dataFavs
+                            .filter(fav => fav.id_producto !== null)
+                            .map(fav => fav.id_producto);
+
+                        // Guardamos los IDs en nuestro estado para que React pinte los corazones
+                        setFavoritos(idsFavoritos);
+                    }
+                }
             } catch (err) {
                 console.error("❌ Error:", err);
                 setError("Error al conectar con el mercado.");
@@ -57,6 +80,12 @@ export const ExplorePage = () => {
         };
         fetchData();
     }, []);
+
+    // Añade esto debajo de tus useState
+    const mostrarNotificacion = (mensaje, tipo) => {
+        setToast({ mensaje, tipo });
+        setTimeout(() => setToast(null), 3000); // Se oculta a los 3 segundos
+    };
 
     // --- LÓGICA DE FILTRADO ---
     const filteredShops = shops.filter((shop) => {
@@ -78,6 +107,40 @@ export const ExplorePage = () => {
     );
 
     const sinResultados = filteredShops.length === 0 && filteredProducts.length === 0;
+
+    // --- FUNCIÓN PARA GESTIONAR LOS FAVORITOS ---
+    const handleToggleFavorito = async (e, id_producto) => {
+        e.preventDefault();
+
+
+        if (usuario) {
+            const res = await fetch(`http://localhost:3000/api/favoritos/toggleFavs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    id_usuario: usuario.id,
+                    id_producto: id_producto
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                mostrarNotificacion(data.message, "success");
+                if (data.isFavorite) {
+                    setFavoritos(prev => [...prev, id_producto]);
+                } else {
+                    setFavoritos(prev => prev.filter(id => id !== id_producto));
+                }
+            }
+
+        } else {
+            mostrarNotificacion("No se puede añadir el producto a favorito sin haber iniciado sesión.", "error");
+        }
+    };
 
     return (
         <div className="flex flex-col md:flex-row gap-8 max-w-7xl mx-auto px-4 py-8 w-full">
@@ -133,18 +196,19 @@ export const ExplorePage = () => {
                     {!sinResultados && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Render COMERCIOS (Si el modo de vista lo permite) */}
-                            {/* TODO Funcionalidad clickar en tienda y redrigir a esa tienda */}
                             {(viewMode === "tiendas" || viewMode === "todos") && filteredShops.map((shop) => (
-                                <div key={`shop-${shop.id_comercio}`} className="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-all rounded-3xl">
-                                    <figure className="h-50 bg-base-200 overflow-hidden rounded-t-3xl">
-                                        <img className="w-full h-full object-cover" src={shop.imagen} />
-                                    </figure>
-                                    <div className="card-body p-4">
-                                        <h2 className="card-title text-base">{shop.nombre}</h2>
-                                        <p className="text-xs opacity-60">{shop.categoria}</p>
-                                        <p className="text-xs italic">{shop.direccion}</p>
+                                <Link key={`shop-${shop.id_comercio}`} href={`/tienda/${shop.id_comercio}`}>
+                                    <div className="card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-all rounded-3xl cursor-pointer">
+                                        <figure className="h-50 bg-base-200 overflow-hidden rounded-t-3xl">
+                                            <img className="w-full h-full object-cover" src={shop.imagen} alt={shop.nombre} />
+                                        </figure>
+                                        <div className="card-body p-4">
+                                            <h2 className="card-title text-base">{shop.nombre}</h2>
+                                            <p className="text-xs opacity-60">{shop.categoria}</p>
+                                            <p className="text-xs italic">{shop.direccion}</p>
+                                        </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
 
                             {/* Render PRODUCTOS (Si el modo de vista lo permite) */}
@@ -155,17 +219,17 @@ export const ExplorePage = () => {
                                     <figure className="h-32 bg-base-200 overflow-hidden rounded-t-3xl relative">
                                         <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover" />
 
-                                        {/* 👇 NUEVO: Botón de Favorito flotante 👇 */}
                                         <button
-                                            onClick={(e) => {
-                                                e.preventDefault(); // Por si la tarjeta entera fuera un enlace
-                                                console.log("¡Clic en favorito! Producto ID:", product.id_producto);
-                                                // Aquí llamaremos a la función del backend más adelante
-                                            }}
-                                            className="absolute top-2 right-2 p-1.5 bg-base-100/80 backdrop-blur-sm rounded-full text-base-content/50 hover:text-red-500 hover:bg-base-100 transition-all shadow-sm z-10"
+                                            onClick={(e) => handleToggleFavorito(e, product.id_producto)}
+                                            className={`absolute top-2 right-2 p-1.5 backdrop-blur-sm rounded-full transition-all shadow-sm z-10 ${favoritos.includes(product.id_producto)
+                                                ? "text-red-500 bg-white"
+                                                : "text-base-content/50 bg-base-100/80"
+                                                }`}
                                         >
-                                            {/* Cuando esté guardado, le añadiremos fill="currentColor" para que se pinte por dentro */}
-                                            <Heart size={18} />
+                                            <Heart
+                                                size={18}
+                                                fill={favoritos.includes(product.id_producto) ? "currentColor" : "none"}
+                                            />
                                         </button>
                                     </figure>
 
@@ -220,6 +284,14 @@ export const ExplorePage = () => {
                     )}
                 </section>
             </main>
+            {toast && (
+                <div className="toast toast-top toast-center z-999 animate-fade-in-down">
+                    <div className={`alert shadow-lg text-white font-bold ${toast.tipo === 'error' ? 'alert-error' : 'bg-linear-to-r from-sea_green-500 to-sea_green-400   border-none'}`}>
+                        {toast.tipo === 'error' ? <span><SquareCheckBig /></span> : <span><SquareCheckBig /></span>}
+                        <span>{toast.mensaje}</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
