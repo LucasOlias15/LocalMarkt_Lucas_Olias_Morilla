@@ -72,7 +72,7 @@ export const Header = ({ toggleMenu }) => {
     return (
         <>
             {/* 👇 AQUÍ ESTÁ EL CAMBIO: Fondo sólido (bg-base-100) y sin blur 👇 */}
-            <header className="navbar bg-base-100 shadow-sm px-4 sticky top-0 z-[200] h-20 transition-all duration-300 border-b border-base-200">
+            <header className="navbar bg-base-100 shadow-sm px-4 sticky top-0 z-200 h-20 transition-all duration-300 border-b border-base-200">
                 
                 {/* Izquierda: Drawer (Menú) */}
                 <div className="navbar-start">
@@ -149,7 +149,7 @@ export const Header = ({ toggleMenu }) => {
                                 <path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" />
                             </svg>
                         </label>
-                        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-2xl z-[110] w-32 p-2 shadow-2xl border border-base-200 mt-4 font-bold">
+                        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-2xl z-110 w-32 p-2 shadow-2xl border border-base-200 mt-4 font-bold">
                             <li><a className="text-sm">Español</a></li>
                             <li><a className="text-sm opacity-50">English</a></li>
                         </ul>
@@ -183,7 +183,7 @@ export const Header = ({ toggleMenu }) => {
                             </svg>
                         </label>
 
-                        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-2xl z-[110] w-52 p-2 shadow-2xl border border-base-200 mt-4 font-bold">
+                        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-2xl z-110 w-52 p-2 shadow-2xl border border-base-200 mt-4 font-bold">
                             {user?.nombre ? (
                                 <>
                                     <li className="menu-title px-4 py-2 text-xs opacity-50 uppercase">Hola, {user.nombre}</li>

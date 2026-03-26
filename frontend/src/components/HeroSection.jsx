@@ -17,13 +17,9 @@ export const HeroSection = () => {
   return (
     <section className="relative w-full max-w-7xl mx-auto px-6 pt-24 pb-32 flex flex-col items-center text-center">
       
-      {/* --- EFECTO AURORA BOREAL INFINITA --- */}
+{/* --- EFECTO AURORA BOREAL INFINITA --- */}
       <motion.div 
-        className="absolute top-[-10%] left-[-50%] w-[200vw] h-[150%] pointer-events-none -z-10 blur-[100px] opacity-60 dark:opacity-40"
-        style={{
-          background: "linear-gradient(110deg, transparent 0%, rgba(0, 163, 136, 0.3) 25%, rgba(234, 179, 8, 0.2) 50%, rgba(0, 163, 136, 0.3) 75%, transparent 100%)",
-          backgroundSize: "200% 100%",
-        }}
+        className="absolute top-[-10%] left-[-50%] w-[200vw] h-[150%] pointer-events-none -z-10 blur-[100px] opacity-60 dark:opacity-40 bg-[linear-gradient(110deg,transparent_0%,rgba(0,163,136,0.3)_25%,rgba(234,179,8,0.2)_50%,rgba(0,163,136,0.3)_75%,transparent_100%)] bg-[length:200%_100%]"
         animate={{
           backgroundPosition: ["200% 0%", "0% 0%"],
         }}

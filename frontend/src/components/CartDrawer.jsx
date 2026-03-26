@@ -1,10 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCartStore } from '../store/useCartStore'; // 👈 ¡FALTA ESTA LÍNEA!
-
+import { useCartStore } from '../store/useCartStore'; 
 
 export const CartDrawer = ({ isOpen, onClose }) => {
 
-// A (Zustand):
 const cart = useCartStore((state) => state.cart);
 const updateQuantity = useCartStore((state) => state.updateQuantity);
 const removeFromCart = useCartStore((state) => state.removeFromCart);
@@ -122,6 +120,7 @@ const totalItems = useCartStore((state) => state.getTotalItems());
                 disabled={cart.length === 0} 
                 className="cursor-pointer w-full bg-jungle_teal hover:bg-sea_green disabled:bg-base-300 disabled:text-base-content/30 text-white font-black py-5 rounded-4xl text-lg shadow-xl shadow-jungle_teal/20 disabled:shadow-none transition-all active:scale-95 flex items-center justify-center gap-3"
               >
+                {/*TODO Añadir funcionalidad simulación finalizar pedido*/}
                 Finalizar pedido
                 <span className="text-xl">➔</span>
               </button>
