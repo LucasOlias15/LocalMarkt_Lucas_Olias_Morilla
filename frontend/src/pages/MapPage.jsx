@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useSearch } from "wouter";
+import { Link, useSearch, useLocation } from "wouter";
 import { IconTicker } from "../components/IconTicker";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { obtenerTodosLosComercios } from "../services/ComerceService";
+import { HeartPlus, MapPinCheck, MapPinned, MapPlus, Search } from "lucide-react";
 import { renderToString } from "react-dom/server";
 
 /* ---------------- ICONOS DEL MAPA (DEL ARCHIVO 2) ---------------- */
@@ -14,9 +15,12 @@ const categoryColors = {
   "Frutería": "#10b981",
   "Carnicería": "#ef4444",
   "Bio": "#84cc16",
+  "Textiles y moda": "#9966CC",     // <-- Cambiado a 'moda'
+  "Artesanía y regalos": "#468FEA", // <-- Cambiado a 'regalos'
   "default": "#0d9488"
 };
 
+// Componente visual del pin (burbuja de color)
 const MapPin = ({ type }) => {
   const color = categoryColors[type] || categoryColors.default;
   return (
@@ -30,15 +34,16 @@ const MapPin = ({ type }) => {
   );
 };
 
+// Generador del icono de Leaflet usando el componente MapPin
 const customIcon = (type) =>
   L.divIcon({
     html: renderToString(<MapPin type={type} />),
     className: "border-none bg-transparent",
     iconSize: [48, 48],
-    iconAnchor: [24, 24] // Centrado perfecto
+    iconAnchor: [24, 24] // Centrado perfecto para que la punta coincida con las coordenadas
   });
 
-
+// Componente invisible que controla el movimiento y zoom del mapa
 const MapController = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
@@ -47,28 +52,37 @@ const MapController = ({ center, zoom }) => {
   return null;
 };
 
+/* =========================================================================
+   COMPONENTE PRINCIPAL: MapPage
+   ========================================================================= */
 export const MapPage = () => {
-  //  Estado inicial 
+  // --- Estados del Mapa ---
   const [mapCenter, setMapCenter] = useState([37.978, 12.961]);
   const [zoomLevel, setZoomLevel] = useState(15);
 
+  // --- Estados de Datos ---
   const [shops, setShops] = useState([]);
   const [selectedShop, setSelectedShop] = useState(null);
   const [filter, setFilter] = useState("Todos");
   const [loading, setLoading] = useState(true);
 
-  // Variable de estado temporal para conectar el buscador de la UI
+  // --- Estado del Buscador ---
   const [localSearch, setLocalSearch] = useState("");
+  const [, setLocation] = useLocation(); // Hook de Wouter para redireccionar
 
+  // --- Lectura de la URL ---
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
+  // Combinamos la búsqueda de la URL con la búsqueda local en vivo
   const searchQuery = searchParams.get("search")?.toLowerCase() || localSearch.toLowerCase();
 
+  /* ---------------- CARGA INICIAL DE DATOS ---------------- */
   useEffect(() => {
     const cargar = async () => {
       setLoading(true);
       const data = await obtenerTodosLosComercios();
 
+      // Formateamos los datos para que el mapa los entienda fácilmente
       const mapped = data.map((c) => ({
         id: c.id_comercio,
         name: c.nombre,
@@ -79,7 +93,7 @@ export const MapPage = () => {
 
       setShops(mapped);
 
-      // Si no hay búsqueda, centramos el mapa en la primera tienda que cargue de la base de datos
+      // Centramos el mapa en la primera tienda si no hay una búsqueda activa
       if (mapped.length > 0 && !searchQuery) {
         setMapCenter(mapped[0].coords);
       }
@@ -88,25 +102,18 @@ export const MapPage = () => {
     };
 
     cargar();
-  }, []); // Solo se ejecuta al montar
+  }, []); // El array vacío asegura que esto solo se ejecute una vez al entrar a la página
 
-  /* ---------------- BUSCADOR ---------------- */
-  useEffect(() => {
-    if (searchQuery && shops.length > 0) {
-      const found = shops.find(
-        (s) =>
-          s.name.toLowerCase().includes(searchQuery) ||
-          s.type.toLowerCase().includes(searchQuery)
-      );
-
-      if (found) {
-        setMapCenter(found.coords);
-        setZoomLevel(17);
-      }
+  /* ---------------- EVENTO DEL BUSCADOR ---------------- */
+  const handleSearch = (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+    if (localSearch.trim()) {
+      // Redirigimos a la página de explorar enviando lo escrito en la URL
+      setLocation(`/explorar?search=${encodeURIComponent(localSearch)}`);
     }
-  }, [searchQuery, shops]);
+  };
 
-  /* ---------------- PANTALLA DE CARGA PREVENIENDO ERROR DE HOOKS ---------------- */
+  /* ---------------- PANTALLA DE CARGA ---------------- */
   if (loading) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-base-100">
@@ -115,7 +122,7 @@ export const MapPage = () => {
     );
   }
 
-  /* ---------------- FILTROS ---------------- */
+  /* ---------------- LÓGICA DE FILTRADO (CATEGORÍAS + BUSCADOR) ---------------- */
   const filteredShops = shops.filter((shop) => {
     const matchesFilter = filter === "Todos" || shop.type === filter;
     const matchesSearch =
@@ -139,71 +146,135 @@ export const MapPage = () => {
     });
   };
 
-  /* ---------------- ZOOM ---------------- */
-  const zoomIn = () => setZoomLevel((z) => Math.min(z + 1, 18));
-  const zoomOut = () => setZoomLevel((z) => Math.max(z - 1, 5));
+  /* ---------------- FUNCIONES DE ZOOM ---------------- */
+  const zoomIn = () => setZoomLevel((z) => Math.min(z + 1, 18)); // Límite máximo
+  const zoomOut = () => setZoomLevel((z) => Math.max(z - 1, 5)); // Límite mínimo
 
   return (
     <div className="w-full min-h-screen bg-base-100 pb-10">
 
-      {/* ---------------- HERO (ESTILO ORIGINAL ARCHIVO 1) ---------------- */}
-      <section className="w-full max-w-7xl mx-auto px-8 md:px-16 pt-32 pb-16 overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8">
-        <div className="w-full lg:w-3/5 text-left z-10">
+     {/* ---------------- HERO ---------------- */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-16 pt-16 pb-16 overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
+        
+        {/* TEXTO PRINCIPAL */}
+        <div className="w-full lg:w-3/5 text-center lg:text-left z-10">
           <motion.h1
-            initial={{ opacity: 0, x: -100 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            className="text-6xl md:text-8xl lg:text-9xl font-black text-base-content leading-[1.05] tracking-tighter"
+            viewport={{ once: true }}
+            className="text-6xl md:text-7xl lg:text-8xl font-black text-base-content leading-tight tracking-tighter"
           >
-            Comercios <br />
-            cerca de ti <br />
-            a un <span className="text-transparent bg-clip-text bg-linear-to-r from-jungle_teal to-sea_green-500 pb-2 inline-block">click.</span>
+            Comercios <br className="hidden md:block" />
+            cerca de ti <br className="hidden md:block" />
+            a un <span className="text-transparent bg-clip-text bg-linear-to-r from-jungle_teal to-sea_green pb-2 inline-block">click.</span>
           </motion.h1>
-          <motion.p className="mt-6 text-xl text-base-content/60 font-medium max-w-md">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mt-6 text-lg md:text-xl text-base-content/60 font-medium max-w-md mx-auto lg:mx-0"
+          >
             Encuentra pan fresco, fruta de temporada y los mejores servicios a menos de 10 minutos de tu casa.
           </motion.p>
         </div>
 
-        <div className="w-full lg:w-2/5 relative flex justify-center lg:justify-end">
+        {/* TARJETA DE BÚSQUEDA */}
+       <div className="w-full lg:w-2/5 relative flex justify-center lg:justify-end mt-8 lg:mt-0">
+          
+          {/* Efecto de luz de fondo */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-jungle_teal/20 rounded-full blur-[80px] -z-10 animate-pulse"></div>
-          <motion.div className="bg-base-100/60 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-[2.5rem] p-8 max-w-sm w-full relative z-10">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-base-200/95 backdrop-blur-2xl border border-base-300 shadow-2xl rounded-[2.5rem] p-8 max-w-sm w-full relative z-10"
+          >
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 rounded-full border-4 border-base-100 bg-jungle_teal text-white flex items-center justify-center font-bold">+120</div>
-              <p className="font-bold text-base-content">Tiendas activas en tu zona</p>
+              <div className="w-14 h-14 rounded-full border-4 border-base-200 bg-jungle_teal text-white flex items-center justify-center font-bold text-xl shadow-md">
+                +12
+              </div>
+              <p className="font-bold text-base-content leading-tight">Tiendas activas<br/>en tu zona</p>
             </div>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Ej: Panadería..."
-                value={localSearch}
+            
+            <form onSubmit={handleSearch} className="relative flex items-center bg-base-100 rounded-full shadow-inner border border-jungle_teal/70 focus-within:border-yellow-400 overflow-hidden transition-colors duration-300">
+              <input 
+                type="text" 
+                value={localSearch} 
                 onChange={(e) => setLocalSearch(e.target.value)}
-                className="w-full bg-base-200/80 px-6 py-4 rounded-2xl focus:outline-none text-base-content placeholder:text-base-content/50"
+                placeholder="¿Qué buscas hoy?" 
+                className="w-full bg-transparent py-4 px-6 text-base-content outline-none placeholder:text-base-content/40 font-medium"
               />
-            </div>
+              <button 
+                type="submit"
+                className="btn btn-circle bg-jungle_teal hover:bg-teal-700 text-white border-none mr-2 min-h-0 h-10 w-10 flex items-center justify-center transition-transform active:scale-95"
+              >
+                <Search size={18} strokeWidth={2.5} />
+              </button>
+            </form>
+
           </motion.div>
         </div>
       </section>
 
-      {/* ---------------- RIBBON (ESTILO ORIGINAL ARCHIVO 1) ---------------- */}
+      {/* ---------------- RIBBON (ESTILO ORIGINAL) ---------------- */}
       <section className="w-full relative py-20 overflow-hidden flex items-center justify-center">
-        <div className="map-ribbon-main w-[110vw] h-20 shadow-2xl flex items-center -rotate-2 z-20 transition-colors bg-jungle_teal">
+        <div className="map-ribbon-main w-[110vw] h-20 shadow-1xl flex items-center -rotate-2 z-11 transition-colors bg-jungle_teal">
           <IconTicker />
         </div>
         <div className="map-ribbon-bg absolute w-[110vw] h-20 rotate-2 z-10 opacity-30 blur-[6px] bg-yellow-400"></div>
       </section>
 
-      {/* ---------------- MAPA (ESTILO Y LÓGICA ARCHIVO 2) ---------------- */}
+      {/* ---------------- MAPA (ESTILO Y LÓGICA)  ---------------- */}
       <section className="w-full max-w-7xl mx-auto px-6 mb-10 mt-20">
+        
+        {/* TÍTULO DEL MAPA */}
+       <div className="flex flex-col items-center justify-center mb-20 text-center ">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl md:text-5xl font-black text-base-content flex items-center justify-center gap-4 pb-2"
+          >
+            Mapa interactivo
+            <span className="text-sea_green flex items-center">
+              <MapPinned size={48} strokeWidth={2.5} />
+            </span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-base-content/60 font-medium text-lg max-w-xl mt-2"
+          >
+            Navega por el mapa, filtra por categorías y descubre los comercios que tienes a la vuelta de la esquina.
+          </motion.p>
+        </div>
+
         <div className="relative w-full h-175 rounded-[3rem] overflow-hidden shadow-2xl bg-base-200">
 
-          {/* FILTROS */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-100 w-full max-w-md px-4">
-            <div className="bg-white/80 backdrop-blur-xl p-2 rounded-2xl shadow-xl flex gap-2 overflow-x-auto no-scrollbar">
-              {["Todos", "Frutería", "Panadería", "Carnicería", "Bio"].map((cat) => (
+          {/* FILTROS FLOTANTES SOBRE EL MAPA */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-11 w-full max-w-md px-4">
+            <div className="bg-white/90 backdrop-blur-xl p-2 rounded-2xl shadow-xl flex gap-2 overflow-x-auto 
+              [&::-webkit-scrollbar]:h-1.5 
+              [&::-webkit-scrollbar-track]:bg-transparent 
+              [&::-webkit-scrollbar-thumb]:bg-gray-300 
+              [&::-webkit-scrollbar-thumb]:rounded-full 
+              hover:[&::-webkit-scrollbar-thumb]:bg-jungle_teal/50 
+              pb-3"
+            >
+              {["Todos", "Frutería", "Panadería", "Carnicería", "Bio", "Textiles y moda", "Artesanía y regalos"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all
-                  ${filter === cat ? "bg-jungle_teal text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  ${filter === cat 
+                    ? "bg-jungle_teal text-white shadow-md shadow-jungle_teal/30" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
                 >
                   {cat}
                 </button>
@@ -220,6 +291,7 @@ export const MapPage = () => {
             <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
             <MapController center={mapCenter} zoom={zoomLevel} />
 
+            {/* Renderizado de los marcadores en el mapa */}
             {filteredShops.map((shop) => (
               <Marker
                 key={shop.id}
@@ -227,25 +299,26 @@ export const MapPage = () => {
                 icon={customIcon(shop.type)}
                 eventHandlers={{
                   click: () => {
-                    setSelectedShop(shop);
-                    setMapCenter(shop.coords);
+                    setSelectedShop(shop); // Abre la tarjeta flotante
+                    setMapCenter(shop.coords); // Centra la cámara
                   }
                 }}
               />
             ))}
           </MapContainer>
 
-          {/* CONTROLES */}
-          <div className="absolute right-6 top-24 flex flex-col gap-3 z-100">            <button
-            onClick={handleGeoLocation}
-            className="w-12 h-12 rounded-xl bg-jungle_teal text-white shadow-lg hover:scale-110 transition flex items-center justify-center"
-            title="Mi ubicación"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-            </svg>
-          </button>
+          {/* CONTROLES DE ZOOM Y GEOLOCALIZACIÓN */}
+          <div className="absolute right-6 top-24 flex flex-col gap-3 z-11">
+            <button
+              onClick={handleGeoLocation}
+              className="w-12 h-12 rounded-xl bg-jungle_teal text-white shadow-lg hover:scale-110 transition flex items-center justify-center"
+              title="Mi ubicación"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+            </button>
 
             <button
               onClick={zoomIn}
@@ -262,8 +335,8 @@ export const MapPage = () => {
             </button>
           </div>
 
-          {/* LEYENDA */}
-          <div className="absolute bottom-6 left-6 z-100 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 space-y-2 text-sm font-medium">
+          {/* LEYENDA DEL MAPA */}
+          <div className="absolute bottom-6 left-6 z-11 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-4 space-y-2 text-sm font-medium">
             {Object.entries(categoryColors).map(([cat, color]) => {
               if (cat === "default") return null;
               return (
@@ -275,14 +348,14 @@ export const MapPage = () => {
             })}
           </div>
 
-          {/* TARJETA COMERCIO */}
+          {/* TARJETA DE INFORMACIÓN DEL COMERCIO FLOTANTE */}
           <AnimatePresence>
             {selectedShop && (
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 40 }}
-                className="absolute bottom-6 right-6 w-87.5 bg-white p-6 rounded-3xl shadow-2xl z-100"
+                className="absolute bottom-6 right-6 w-87.5 bg-white p-6 rounded-3xl shadow-2xl z-11"
               >
                 <img
                   src={selectedShop.img}
@@ -302,7 +375,7 @@ export const MapPage = () => {
                 </Link>
                 <button
                   onClick={() => setSelectedShop(null)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition flex items-center justify-center w-8 h-8 rounded-full bg-base-200"
                 >
                   ✕
                 </button>
@@ -313,14 +386,15 @@ export const MapPage = () => {
         </div>
       </section>
 
+      {/* ---------------- SECCIÓN DE CARACTERÍSTICAS (Explora tu barrio) ---------------- */}
       <section className="py-12 md:py-16 px-4 max-w-7xl mx-auto w-full">
     
     <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-bright_fern to-jungle_teal pb-2 inline-block">
-            Explora tu barrio
+        <h2 className="text-3xl md:text-5xl font-black  pb-2 inline-block">
+            Explora tu <strong className="text-transparent bg-clip-text bg-gradient-to-r from-bright_fern to-jungle_teal">barrio</strong>
         </h2>
         <p className="text-base-content/70 mt-4 max-w-2xl mx-auto text-lg font-medium">
-            Navega por el mapa interactivo y descubre los tesoros que los comerciantes locales tienen preparados para ti, a la vuelta de la esquina.
+          Recorre nuestras calles digitales para encontrar los mejores productos de proximidad. Todo lo que necesitas está mucho más cerca de lo que imaginas.        
         </p>
     </div>
 
@@ -329,10 +403,7 @@ export const MapPage = () => {
         {/* TARJETA 1 - Ubicación (Jungle Teal) */}
         <div className="bg-base-200/50 rounded-3xl p-8 border border-base-300 hover:border-jungle_teal/30 hover:shadow-lg transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-jungle_teal text-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                </svg>
+                <MapPinCheck/>
             </div>
             <h3 className="text-xl font-bold text-base-content mb-3">Encuentra lo más cercano</h3>
             <p className="text-base-content/60">Localiza tiendas, panaderías y mercados a pocos pasos de tu ubicación actual.</p>
@@ -340,11 +411,8 @@ export const MapPage = () => {
 
         {/* TARJETA 2 - Variedad (Yellow) */}
         <div className="bg-base-200/50 rounded-3xl p-8 border border-base-300 hover:border-yellow-400/50 hover:shadow-lg transition-all group">
-            {/* Usamos text-yellow-900 para asegurar el contraste sobre el fondo amarillo */}
             <div className="w-14 h-14 rounded-2xl bg-yellow-400 text-yellow-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-                </svg>
+               <MapPlus/>
             </div>
             <h3 className="text-xl font-bold text-base-content mb-3">Gran variedad local</h3>
             <p className="text-base-content/60">Filtra rápidamente por categorías para encontrar exactamente lo que necesitas hoy.</p>
@@ -353,9 +421,7 @@ export const MapPage = () => {
         {/* TARJETA 3 - Comunidad (Sea Green) */}
         <div className="bg-base-200/50 rounded-3xl p-8 border border-base-300 hover:border-sea_green/40 hover:shadow-lg transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-sea_green text-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                </svg>
+                <HeartPlus/>
             </div>
             <h3 className="text-xl font-bold text-base-content mb-3">Apoya tu comunidad</h3>
             <p className="text-base-content/60">Cada compra fortalece la economía de tu barrio y fomenta el comercio sostenible.</p>

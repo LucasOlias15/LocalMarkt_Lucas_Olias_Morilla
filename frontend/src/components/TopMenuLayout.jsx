@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter"; // <-- IMPORTANTE: Añadimos Link de Wouter
 import { Header } from "./Header"; 
-import { Banana, Croissant, Beef, Leaf, House, PackageSearch, ShoppingBag, LayoutList, Wrench, Shirt, Amphora } from "lucide-react";
+import { Banana, Croissant, Beef, Leaf, House, PackageSearch, ShoppingBag, LayoutList, Wrench, Shirt, Amphora, LocateFixed } from "lucide-react";
 
 export const TopMenuLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,6 +39,7 @@ export const TopMenuLayout = ({ children }) => {
                                 <LayoutList/>
                             </span> Menú Principal
                         </div>
+                        {/*TODO Espacio entre categorias un poco reducido. */}
                         
                         {/* INICIO */}
                         <li>
@@ -71,6 +72,15 @@ export const TopMenuLayout = ({ children }) => {
                             </li>
                         )}
 
+                         {/* ENLACE A MAPA  */}
+                        <li>
+                            <Link href="/mapa">
+                                <a onClick={toggleMenu} className="text-lg font-medium hover:text-jungle_teal flex items-center gap-3 py-3">
+                                    <LocateFixed size={20}/> Mapa Interactivo
+                                </a>
+                            </Link>
+                        </li>
+
                         <div className="divider my-2"></div>
                         
                         {/* SOPORTE TÉCNICO */}
@@ -81,6 +91,7 @@ export const TopMenuLayout = ({ children }) => {
                                 </a>
                             </Link>
                         </li>
+                        
                     </ul>
 
                     {/* SECCIÓN DERECHA: Categorías y Promoción */}
