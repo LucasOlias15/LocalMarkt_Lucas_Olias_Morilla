@@ -1,4 +1,4 @@
-import { obtenerPedidosPorUsuario } from "../models/pedidoModel.js";
+import { crearNuevoPedido, obtenerPedidosPorUsuario } from "../models/pedidoModel.js";
 
 export const getMisPedidos = async (req, res) => {
     try {
@@ -49,5 +49,34 @@ export const getMisPedidos = async (req, res) => {
     } catch (error) {
         console.error("Error en getMisPedidos:", error);
         return res.status(500).json({ error: "Error al recuperar los pedidos" });
+    }
+};
+
+export const simularPedido = async (req, res) => {
+    try {
+        // 1. Extraemos los datos que nos va a enviar el frontend en formato JSON
+        const { id_usuario, id_comercio, total, productos } = req.body;
+
+        // Validamos un poco por seguridad
+        if (!id_usuario || !productos || productos.length === 0) {
+            return res.status(400).json({ error: "El carrito está vacío o faltan datos" });
+        }
+
+        // 2. 📝 RETO: Llama a tu función crearNuevoPedido pasándole las 4 variables de arriba.
+        // Recuerda que es una promesa (usa await) y guarda lo que devuelve en una variable llamada 'nuevoId'
+        
+        const nuevoId = await crearNuevoPedido(id_usuario, id_comercio, total, productos)
+
+        // 3. 📝 RETO: Devuelve una respuesta JSON al frontend con código 201 (Created)
+        // Puedes enviar un objeto con un mensaje de éxito y el 'nuevoId'
+        
+        return res.status(201).json({
+            message: "Nuevo pedido creado con exito",
+            nuevoId: nuevoId
+        });
+
+    } catch (error) {
+        console.error("Error al simular el pedido:", error);
+        return res.status(500).json({ error: "Error interno al procesar el pago" });
     }
 };
