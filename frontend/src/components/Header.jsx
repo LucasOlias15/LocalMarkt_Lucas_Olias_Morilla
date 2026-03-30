@@ -7,7 +7,19 @@ import { useCartStore } from '../store/useCartStore';
 
 export const Header = ({ toggleMenu }) => {
 
-    const totalItems = useCartStore((state) => state.getTotalItems());
+    // 1. PRIMERO: Declaramos los estados locales y de enrutamiento
+    const [user, setUser] = useState(null);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [location] = useLocation();
+
+    // 2. SEGUNDO: Extraemos las cosas de Zustand
+    const carts = useCartStore((state) => state.carts);
+    const clearCart = useCartStore((state) => state.clearCart);
+
+    // 3. TERCERO: Ahora sí, como 'user' ya existe, podemos usarlo para las matemáticas
+    const userId = user?.id || user?.id_usuario;
+    const userCart = userId ? (carts[userId] || []) : [];
+    const totalItems = userCart.reduce((acc, item) => acc + (item.quantity || 0), 0);
 
     // --- LÓGICA DEL TEMA ---
     const [isDark, setIsDark] = useState(() => {
@@ -18,20 +30,20 @@ export const Header = ({ toggleMenu }) => {
             }
             return window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
-        return true; 
+        return true;
     });
 
     useEffect(() => {
         const root = document.documentElement;
 
         if (isDark) {
-            root.setAttribute('data-theme', 'dark'); 
-            root.classList.add('dark');              
-            localStorage.setItem('theme', 'dark');   
+            root.setAttribute('data-theme', 'dark');
+            root.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
         } else {
-            root.setAttribute('data-theme', 'light'); 
-            root.classList.remove('dark');            
-            localStorage.setItem('theme', 'light');   
+            root.setAttribute('data-theme', 'light');
+            root.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
         }
     }, [isDark]);
 
@@ -45,17 +57,13 @@ export const Header = ({ toggleMenu }) => {
         return () => window.removeEventListener('openCart', handleOpenCart);
     }, []);
 
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [user, setUser] = useState(null);
-    const [location] = useLocation();
-
     useEffect(() => {
         try {
             const storedUser = localStorage.getItem("user");
             if (storedUser) {
                 setUser(JSON.parse(storedUser));
             } else {
-                setUser(null); 
+                setUser(null);
             }
         } catch (err) {
             console.error("Error leyendo el usuario", err);
@@ -65,15 +73,16 @@ export const Header = ({ toggleMenu }) => {
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        clearCart();
         setUser(null);
-        window.location.href = "/"; 
+        window.location.href = "/";
     };
 
     return (
         <>
             {/* 👇 AQUÍ ESTÁ EL CAMBIO: Fondo sólido (bg-base-100) y sin blur 👇 */}
             <header className="navbar bg-base-100 shadow-sm px-4 sticky top-0 z-200 h-20 transition-all duration-300 border-b border-base-200">
-                
+
                 {/* Izquierda: Drawer (Menú) */}
                 <div className="navbar-start">
                     <div className="flex items-center pl-2">
@@ -83,11 +92,11 @@ export const Header = ({ toggleMenu }) => {
                         >
                             <motion.svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="w-10 h-10" 
+                                className="w-10 h-10"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="3" 
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 initial="initial"
@@ -141,7 +150,7 @@ export const Header = ({ toggleMenu }) => {
                             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                         </svg>
                     </label>
-                    
+
                     {/* 2. BOTÓN IDIOMA */}
                     <div className="dropdown dropdown-end">
                         <label tabIndex={0} className="btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal transition-all shadow-md flex items-center justify-center cursor-pointer">
@@ -158,7 +167,7 @@ export const Header = ({ toggleMenu }) => {
                     {/* 3. BOTÓN CARRITO */}
                     <button onClick={() => setIsCartOpen(true)} className="btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal transition-all shadow-md relative overflow-visible">
                         <motion.div
-                            key={isCartOpen} 
+                            key={isCartOpen}
                             initial={{ scale: 1 }}
                             animate={isCartOpen ? { scale: [1, 1.2, 1] } : {}}
                             transition={{ duration: 0.3 }}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useSearch } from "wouter";
 import { PanelTopOpen, Search, ShoppingBasket, Store, Heart, SquareCheckBig, Trash, AlertCircle } from "lucide-react";
-// 👇 Importamos motion para la aurora
+import { useCartStore } from '../store/useCartStore';
 import { motion } from "framer-motion";
 
 export const ExplorePage = () => {
@@ -154,6 +154,25 @@ export const ExplorePage = () => {
 
     const sinResultados = filteredShops.length === 0 && filteredProducts.length === 0;
 
+    const addToCart = useCartStore((state) => state.addToCart);
+
+    // 👇 2. Creamos la función que se ejecutará al hacer clic
+    const handleAddToCart = (producto) => {
+        if (usuario) {
+            // Cogemos el ID (dependiendo de cómo lo llames en tu BD, puede ser id o id_usuario)
+            const userId = usuario.id || usuario.id_usuario;
+            
+            // Enviamos el usuario y el producto al carrito de Zustand
+            addToCart(userId, producto);
+            
+            // Disparamos un toast bonito
+            mostrarNotificacion(`Añadido: ${producto.nombre}`, "success");
+        } else {
+            // Si no está logueado, le avisamos
+            mostrarNotificacion("Inicia sesión para añadir productos a tu cesta.", "error");
+        }
+    };
+
     // Pantalla de carga inicial
     if (isLoading) return (
         <div className="flex justify-center items-center min-h-[60vh]">
@@ -290,7 +309,7 @@ export const ExplorePage = () => {
                                             <p className="text-xs italic line-clamp-2">{product.descripcion}</p>
                                             <div className="flex justify-between items-center mt-2">
                                                 <span className="font-bold text-jungle_teal text-lg">{product.precio}€</span>
-                                                <button className="btn btn-sm bg-jungle_teal text-white border-none rounded-full px-6 hover:bg-jungle_teal/90">Añadir</button>
+                                                <button onClick={() => handleAddToCart(product)} className="btn btn-sm bg-jungle_teal text-white border-none rounded-full px-6 hover:bg-jungle_teal/90">Añadir</button>
                                             </div>
                                         </div>
                                     </div>
