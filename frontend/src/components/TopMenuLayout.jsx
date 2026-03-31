@@ -64,7 +64,7 @@ export const TopMenuLayout = ({ children }) => {
 
                         {estaLogueado && (
                             <li>
-                                <Link href="/mis-compras">
+                                <Link href="/perfil/pedidos">
                                     <a onClick={toggleMenu} className="text-lg font-medium hover:text-jungle_teal flex items-center gap-3 py-3">
                                         <ShoppingBag size={20}/> Mis Compras
                                     </a>

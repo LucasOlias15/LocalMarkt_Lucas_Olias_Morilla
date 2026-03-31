@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '../store/useCartStore';
 import { useState } from 'react';
-import { Link } from 'wouter'; // Lo importamos por si necesitamos mandarlo a iniciar sesión
+import { Link } from 'wouter'; 
 
 export const CartDrawer = ({ isOpen, onClose }) => {
 
@@ -72,7 +72,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
       setIsCheckingOut(false);
     }
   };
-  
+
   return (
     <AnimatePresence>
       {isOpen && (
