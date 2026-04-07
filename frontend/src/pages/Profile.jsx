@@ -1,7 +1,7 @@
-import { UserKey, UserRoundKey } from "lucide-react";
+import { UserRoundKey, UserRoundCog, Heart, Store, ShoppingBasket, ExternalLink, ArrowRight, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
-import { UserRoundCog } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 //TODO Añadir funcionalidad Crear cuenta , ruta /registro
 
@@ -9,9 +9,16 @@ export const Profile = () => {
   const [user, setUser] = useState(null);
   const [, setLocation] = useLocation();
 
+  // --- ESTADOS DE LOS DESPLEGABLES ---
   const [showSettings, setShowSettings] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   
-  // 1. Añadimos 'claveActual' y renombramos 'password' a 'nuevaClave'
+  // --- ESTADOS PARA FAVORITOS ---
+  const [favShops, setFavShops] = useState([]);
+  const [favProducts, setFavProducts] = useState([]);
+  const [loadingFavs, setLoadingFavs] = useState(false);
+
+  // --- ESTADOS PARA AJUSTES ---
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -25,13 +32,46 @@ export const Profile = () => {
       setFormData({
         nombre: user.nombre || "",
         email: user.email || "",
-        claveActual: "", // Siempre en blanco
-        nuevaClave: ""   // Siempre en blanco
+        claveActual: "", 
+        nuevaClave: ""   
       });
     }
   }, [user]);
 
-  // Manejador para actualizar el estado cuando se escribe
+  // Efecto para cargar los favoritos SOLO cuando se abre la pestaña
+  useEffect(() => {
+    const fetchFavoritesData = async () => {
+      if (!user || !showFavorites) return;
+      
+      setLoadingFavs(true);
+      try {
+        const [resShops, resProducts, resFavs] = await Promise.all([
+          fetch("http://localhost:3000/api/comercios"),
+          fetch("http://localhost:3000/api/productos/explorar"),
+          fetch(`http://localhost:3000/api/favoritos/${user.id || user.id_usuario}`)
+        ]);
+
+        const dataShops = await resShops.json();
+        const dataProducts = await resProducts.json();
+        const dataFavs = resFavs.ok ? await resFavs.json() : [];
+
+        const favsSeguros = Array.isArray(dataFavs) ? dataFavs : [];
+        const idsProductosFavs = favsSeguros.filter(f => f.id_producto).map(f => f.id_producto);
+        const idsComerciosFavs = favsSeguros.filter(f => f.id_comercio).map(f => f.id_comercio);
+
+        setFavShops(Array.isArray(dataShops) ? dataShops.filter(shop => idsComerciosFavs.includes(shop.id_comercio)) : []);
+        setFavProducts(Array.isArray(dataProducts) ? dataProducts.filter(prod => idsProductosFavs.includes(prod.id_producto)) : []);
+
+      } catch (error) {
+        console.error("Error cargando favoritos:", error);
+      } finally {
+        setLoadingFavs(false);
+      }
+    };
+
+    fetchFavoritesData();
+  }, [showFavorites, user]);
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -39,28 +79,24 @@ export const Profile = () => {
     });
   };
 
-  // Manejador del botón "Guardar"
   const handleSave = async (e) => {
     e.preventDefault();
 
-    // 2. Validación en el Front: Exigir contraseña actual
     if (!formData.claveActual) {
       alert("Debes introducir tu contraseña actual para guardar los cambios.");
       return;
     }
 
-    // 3. Preparamos el objeto EXACTAMENTE como lo espera el Backend
     const updatedData = {
       nombre: formData.nombre,
       email: formData.email,
-      clave: formData.claveActual, // El backend lo llama 'clave'
-      ...(formData.nuevaClave && { nuevaClave: formData.nuevaClave }) // Solo enviamos nuevaClave si escribió algo
+      clave: formData.claveActual, 
+      ...(formData.nuevaClave && { nuevaClave: formData.nuevaClave }) 
     };
 
     try {
-      // 4. Petición al backend (usamos tu endpoint de perfil)
-const response = await fetch(`http://localhost:3000/api/users/perfil`, {
-        method: 'PUT', // o PATCH
+      const response = await fetch(`http://localhost:3000/api/users/perfil`, {
+        method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -71,17 +107,12 @@ const response = await fetch(`http://localhost:3000/api/users/perfil`, {
       const data = await response.json();
 
       if (response.ok) {
-        // 5. ¡Éxito! Usamos los datos frescos que devuelve el servidor
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
-
         alert("¡Perfil actualizado con éxito!");
-        
-        // Limpiamos las contraseñas del formulario por seguridad y lo cerramos
         setFormData(prev => ({ ...prev, claveActual: "", nuevaClave: "" }));
         setShowSettings(false); 
       } else {
-        // Mostramos el mensaje de error específico del backend (ej: "Contraseña incorrecta" o "Email en uso")
         alert(`Error: ${data.error || "No se pudo actualizar el perfil"}`);
       }
     } catch (error) {
@@ -109,22 +140,17 @@ const response = await fetch(`http://localhost:3000/api/users/perfil`, {
 
   return (
     <div className="min-h-screen bg-base-100 py-12 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-6">
         
-        {/* 🎨 Cabecera Rediseñada */}
+        {/* 🎨 CABECERA DEL PERFIL */}
         <section className="bg-base-200 rounded-[3rem] p-8 md:p-12 shadow-sm border border-base-300 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-          
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-sea_green/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="avatar z-10">
             <div className="w-32 h-32 rounded-[2.5rem] p-1.5 bg-linear-to-tr from-jungle_teal to-bright_fern shadow-xl">
-              <div className="w-full h-full rounded-[2.2rem] bg-base-100 flex items-center justify-center">
-                {user.rol === 'dueño' ? (
-                  <UserRoundKey className="w-12 h-12"/>
-                ) : (
-                  <UserRoundCog className="w-12 h-12"/>
-                )}
+              <div className="w-full h-full rounded-[2.2rem] bg-base-100 flex items-center justify-center text-jungle_teal">
+                {user.rol === 'dueño' ? <UserRoundKey className="w-12 h-12"/> : <UserRoundCog className="w-12 h-12"/>}
               </div>
             </div>
           </div>
@@ -136,27 +162,10 @@ const response = await fetch(`http://localhost:3000/api/users/perfil`, {
             <p className="text-lg text-base-content/60 font-medium mb-5">
               {user.email}
             </p>
-
             <span className={`badge badge-lg border-none py-4 px-5 font-bold shadow-sm inline-flex items-center gap-2 ${
-              user.rol === 'dueño' 
-                ? 'bg-jungle_teal text-white' 
-                : 'bg-bright_fern text-white'
+              user.rol === 'dueño' ? 'bg-jungle_teal text-white' : 'bg-bright_fern text-white'
             }`}>
-              {user.rol === 'dueño' ? (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-                  </svg>
-                  DUEÑO DE COMERCIO
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                  CLIENTE LOCAL
-                </>
-              )}
+              {user.rol === 'dueño' ? <><Store className="w-4 h-4" /> DUEÑO DE COMERCIO</> : <><UserRoundCog className="w-4 h-4" /> CLIENTE LOCAL</>}
             </span>
           </div>
 
@@ -171,179 +180,228 @@ const response = await fetch(`http://localhost:3000/api/users/perfil`, {
           </button>
         </section>
 
-       {/* Sección Dinámica: Bento Grid */}
+        {/* 🧩 BENTO GRID (EL PUZZLE PRINCIPAL) */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {user.rol === 'dueño' ? (
             <>
-              <div className="md:col-span-2 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/30 transition-all cursor-pointer group flex flex-col justify-between">
-                <div>
+              {/* BLOQUE DUEÑO 1 (2 Columnas) */}
+              <div className="md:col-span-2 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/30 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                <div className="relative z-10">
                   <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-jungle_teal transition-colors">Mi Tienda</h2>
-                  <p className="text-base-content/60">Gestiona tu inventario, revisa pedidos activos y actualiza tu perfil público.</p>
+                  <p className="text-base-content/60 max-w-sm">Gestiona tu inventario, revisa pedidos activos y actualiza tu perfil público.</p>
                 </div>
-                <div className="mt-8 flex justify-end">
-                  <span className="text-sm font-bold text-jungle_teal uppercase tracking-widest bg-jungle_teal/10 px-4 py-2 rounded-xl group-hover:bg-jungle_teal group-hover:text-white transition-colors">
-                    <Link href={`/panel-tienda/${user.id_comercio}`} >
-                      Acceder al panel -&gt;
-                    </Link>
-                  </span>
+                <div className="mt-8 flex justify-end relative z-10">
+                  <Link href={`/panel-tienda/${user.id_comercio}`}>
+                    <span className="text-sm font-bold text-jungle_teal uppercase tracking-widest bg-jungle_teal/10 px-5 py-3 rounded-2xl group-hover:bg-jungle_teal group-hover:text-white transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-2">
+                      Acceder al panel <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </Link>
                 </div>
               </div>
 
-              <div className="bg-jungle_teal text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-sea_green transition-colors cursor-pointer flex flex-col justify-center">
-                <h2 className=" font-black opacity-80 uppercase tracking-wider text-sm mb-2">Ventas del mes</h2>
-                <div className="text-5xl font-black mb-1">24</div>
+              {/* BLOQUE DUEÑO 2 (1 Columna) */}
+              <div className="md:col-span-1 bg-jungle_teal text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-sea_green transition-colors cursor-pointer flex flex-col justify-center">
+                <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">Ventas del mes</h2>
+                <div className="text-6xl font-black mb-1">24</div>
                 <p className="text-white/70 text-sm font-medium">Pedidos completados</p>
               </div>
             </>
           ) : (
             <>
-              <div className="md:col-span-2 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/50 transition-all cursor-pointer group flex flex-col justify-between">
-    <div>
-        <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-jungle_teal transition-colors">
-            Historial de Pedidos
-        </h2>
-        <p className="text-base-content/60">Revisa el estado de tus compras recientes y descarga tus recibos.</p>
-    </div>
-    <div className="mt-8 flex justify-end">
-      <Link href="/perfil/pedidos">
-      <span className="text-sm font-bold text-jungle_teal uppercase tracking-widest bg-jungle_teal/10 px-4 py-2 rounded-xl group-hover:bg-jungle_teal group-hover:text-white transition-colors">
-            Ver pedidos -&gt;
-        </span>
-        </Link>
-    </div>
-</div>
+              {/* BLOQUE CLIENTE 1: PEDIDOS (2 Columnas) */}
+              <div className="md:col-span-2 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/40 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-64 h-full bg-linear-to-l from-base-200/50 to-transparent pointer-events-none"></div>
+                <div className="relative z-10">
+                    <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-jungle_teal transition-colors">
+                        Historial de Pedidos
+                    </h2>
+                    <p className="text-base-content/60 max-w-sm">Revisa el estado de tus compras recientes, descarga tus recibos y vuelve a pedir lo que te gusta.</p>
+                </div>
+                <div className="mt-8 flex justify-end relative z-10">
+                  <Link href="/perfil/pedidos">
+                    <span className="text-sm font-bold text-jungle_teal uppercase tracking-widest bg-jungle_teal/10 px-5 py-3 rounded-2xl group-hover:bg-jungle_teal group-hover:text-white transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-2">
+                        Ver pedidos <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </Link>
+                </div>
+              </div>
 
-             <div className="bg-jungle_teal text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-jungle_teal/90 transition-colors cursor-pointer flex flex-col justify-center">
-    <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">
-        Tus Favoritos
-    </h2>
-    <div className="text-5xl font-black mb-1">3</div>
-    <p className="text-white/80 text-sm font-medium">
-        Comercios guardados
-    </p>
-</div>
+              {/* BLOQUE CLIENTE 2: FAVORITOS TRIGGER (1 Columna interactiva) */}
+              <div 
+                onClick={() => {
+                  setShowFavorites(!showFavorites);
+                  if (!showFavorites) setShowSettings(false); 
+                }}
+                className={`md:col-span-1 rounded-[2.5rem] p-8 shadow-sm transition-all duration-300 cursor-pointer flex flex-col justify-center relative overflow-hidden ${
+                  showFavorites
+                    ? 'bg-red-500 text-white shadow-xl shadow-red-500/20 scale-[0.97]' // Se hunde cuando está activo
+                    : 'bg-jungle_teal text-white hover:bg-sea_green hover:-translate-y-1'
+                }`}
+              >
+                <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="relative z-10">
+                    {/* El corazón ya no gira, pero late suavemente y se rellena si está activo */}
+                    <Heart className={`w-12 h-12 mb-3 transition-all duration-500 ${showFavorites ? 'fill-white drop-shadow-md scale-110' : 'fill-white/20'}`} />
+                    <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
+                        Tus Favoritos
+                    </h2>
+                    <p className="text-white/80 text-sm font-medium">
+                       Ver guardados
+                    </p>
+                </div>
+              </div>
             </>
           )}
 
-          {/* Bloque Común: Ajustes de cuenta */}
-          <div className={`md:col-span-3 rounded-[2.5rem] p-8 transition-all duration-300 shadow-sm border bg-base-200 border-base-300 hover:border-base-content/20`}>
-            
+          {/* 🌟 DESPLEGABLE DE FAVORITOS (Aparece Mágicamente dentro del Puzzle) 🌟 */}
+          <AnimatePresence>
+            {showFavorites && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                className="md:col-span-3 overflow-hidden origin-top"
+              >
+                <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
+                  {loadingFavs ? (
+                    <div className="flex justify-center py-12">
+                      <span className="loading loading-spinner loading-lg text-red-500"></span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      
+                      {/* COLUMNA TIENDAS */}
+                      <div>
+                        <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
+                          <Store className="w-6 h-6 text-red-500" /> Tiendas Favoritas
+                          <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">{favShops.length}</span>
+                        </h3>
+                        {favShops.length === 0 ? (
+                          <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">No has guardado ninguna tienda aún.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {favShops.map(shop => (
+                              <Link key={shop.id_comercio} href={`/tienda/${shop.id_comercio}`}>
+                                <div className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer group">
+                                  <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                    <img src={shop.imagen} alt={shop.nombre} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-bold text-base-content">{shop.nombre}</h4>
+                                    <p className="text-xs text-base-content/50">{shop.categoria}</p>
+                                  </div>
+                                  <ExternalLink className="w-5 h-5 text-base-content/20 group-hover:text-red-500 transition-colors mr-3" />
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* COLUMNA PRODUCTOS */}
+                      <div>
+                        <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
+                          <ShoppingBasket className="w-6 h-6 text-red-500" /> Productos Favoritos
+                          <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">{favProducts.length}</span>
+                        </h3>
+                        {favProducts.length === 0 ? (
+                          <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">No has guardado ningún producto aún.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {favProducts.map(prod => (
+                              <div key={prod.id_producto} className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all group">
+                                <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                  <img src={prod.imagen} alt={prod.nombre} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="font-bold text-base-content leading-tight mb-1">{prod.nombre}</h4>
+                                  <p className="text-sm font-black text-jungle_teal">{prod.precio}€</p>
+                                </div>
+                                <Link href={`/tienda/${prod.id_comercio}`}>
+                                  <button className="btn btn-sm btn-circle btn-ghost text-base-content/40 hover:text-red-500 hover:bg-red-50 transition-colors mr-1">
+                                    <ExternalLink className="w-4 h-4" />
+                                  </button>
+                                </Link>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* BLOQUE COMÚN: AJUSTES (3 Columnas - Puzzle base) */}
+          <div className="md:col-span-3 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300 transition-all duration-300 relative overflow-hidden">
             <div 
-              onClick={() => setShowSettings(!showSettings)}
+              onClick={() => {
+                setShowSettings(!showSettings);
+                if (!showSettings) setShowFavorites(false); 
+              }}
               className="flex items-center justify-between group cursor-pointer"
             >
-              <div>
-                <h2 className="text-xl font-black text-base-content">Ajustes de perfil</h2>
-                <p className="text-base-content/60 text-sm mt-1">
-                  Modifica tus datos personales, contraseña y preferencias.
-                </p>
-              </div>
-              
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all duration-500 ${
-                showSettings 
-                  ? 'rotate-90 bg-yellow-400 text-yellow-900 scale-110 shadow-md' 
-                  : 'bg-base-100 text-base-content/50 group-hover:scale-110 group-hover:bg-base-300'
-              }`}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${showSettings ? 'bg-yellow-400 text-yellow-900' : 'bg-base-200 text-base-content/50 group-hover:bg-yellow-100 group-hover:text-yellow-600'}`}>
+                  <Settings className={`w-7 h-7 transition-transform duration-500 ${showSettings ? 'rotate-90' : ''}`} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-base-content">Ajustes de la cuenta</h2>
+                  <p className="text-base-content/60 text-sm mt-1">Modifica tus datos, contraseña y privacidad.</p>
+                </div>
               </div>
             </div>
 
-            {showSettings && (
-              <form onSubmit={handleSave} className="mt-8 pt-8 border-t border-base-300/50 animate-fade-in-down">
-                {/* NOTA DE SEGURIDAD PARA EL USUARIO */}
-                <div className="mb-6 p-4 bg-info/10 border border-info/20 rounded-2xl flex gap-3 text-info items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 mt-0.5 shrink-0">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                  <p className="text-sm font-medium">Por tu seguridad, necesitas introducir tu contraseña actual para guardar cualquier cambio.</p>
-                </div>
+            {/* FORMULARIO DE AJUSTES DESPLEGABLE */}
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <form onSubmit={handleSave} className="mt-8 pt-8 border-t border-base-200">
+                    <div className="mb-6 p-5 bg-info/10 border border-info/20 rounded-2xl flex gap-3 text-info items-start">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 mt-0.5 shrink-0">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                      <p className="text-sm font-medium">Por tu seguridad, necesitas introducir tu contraseña actual para guardar cualquier cambio.</p>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  
-               {/* Campo: Nombre */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2">
-                      Nombre completo
-                    </label>
-                    <input 
-                      type="text" 
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleInputChange}
-                      className="w-full p-4 rounded-2xl bg-base-300/40 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium shadow-inner"
-                      placeholder="Tu nombre"
-                    />
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2">Nombre completo</label>
+                        <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full p-4 rounded-2xl bg-base-300 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium" placeholder="Tu nombre" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2">Correo electrónico</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full p-4 rounded-2xl bg-base-300 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium" placeholder="tu@email.com" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2 flex items-center gap-1">Contraseña Actual <span className="text-error">*</span></label>
+                        <input type="password" name="claveActual" value={formData.claveActual} onChange={handleInputChange} required className="w-full p-4 rounded-2xl bg-base-300 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-error focus:ring-4 focus:ring-error/10 transition-all font-medium" placeholder="Obligatoria para guardar" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2 flex items-center justify-between"><span>Nueva Contraseña</span><span className="text-[10px] font-normal lowercase opacity-70">(opcional)</span></label>
+                        <input type="password" name="nuevaClave" value={formData.nuevaClave} onChange={handleInputChange} className="w-full p-4 rounded-2xl bg-base-300 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium" placeholder="Dejar en blanco si no cambia" />
+                      </div>
+                    </div>
 
-                  {/* Campo: Email */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2">
-                      Correo electrónico
-                    </label>
-                    <input 
-                      type="email" 
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full p-4 rounded-2xl bg-base-300/40 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium shadow-inner"
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-
-                  {/* Campo NUEVO: Contraseña ACTUAL (Obligatoria) */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2 flex items-center gap-1">
-                      Contraseña Actual <span className="text-error">*</span>
-                    </label>
-                    <input 
-                      type="password" 
-                      name="claveActual"
-                      value={formData.claveActual}
-                      onChange={handleInputChange}
-                      required
-                      // NOTA: Para este campo crítico, en el focus he puesto border-error para que resalte
-                      className="w-full p-4 rounded-2xl bg-base-300/40 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-error focus:ring-4 focus:ring-error/10 transition-all font-medium shadow-inner"
-                      placeholder="Obligatoria para guardar"
-                    />
-                  </div>
-
-                  {/* Campo: Nueva Contraseña */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2 flex items-center justify-between">
-                      <span>Nueva Contraseña</span>
-                      <span className="text-[10px] font-normal lowercase opacity-70">(opcional)</span>
-                    </label>
-                    <input 
-                      type="password" 
-                      name="nuevaClave"
-                      value={formData.nuevaClave}
-                      onChange={handleInputChange}
-                      className="w-full p-4 rounded-2xl bg-base-300/40 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium shadow-inner"
-                      placeholder="Dejar en blanco si no cambia"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 mt-4">
-                  <button 
-                    type="button" 
-                    onClick={() => setShowSettings(false)}
-                    className="btn btn-ghost text-base-content/60 hover:bg-error/10 hover:text-error rounded-xl transition-colors font-bold"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="btn bg-sea_green hover:bg-jungle_teal text-white font-bold rounded-xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border-none px-8"
-                  >
-                    Guardar Cambios
-                  </button>
-                </div>
-              </form>
-            )}
+                    <div className="flex items-center justify-end gap-3 mt-4">
+                      <button type="button" onClick={() => setShowSettings(false)} className="btn btn-ghost text-base-content/60 hover:bg-error/10 hover:text-error rounded-xl transition-colors font-bold">Cancelar</button>
+                      <button type="submit" className="btn bg-sea_green hover:bg-jungle_teal text-white font-bold rounded-xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border-none px-8">Guardar Cambios</button>
+                    </div>
+                  </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
         </section>

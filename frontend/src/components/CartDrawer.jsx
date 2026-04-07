@@ -105,7 +105,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] cursor-pointer"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-199 cursor-pointer"
             />
 
             {/* PANEL LATERAL */}
@@ -114,7 +114,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 h-full w-full max-w-md bg-base-100 shadow-[-20px_0_50px_rgba(0,0,0,0.2)] z-[201] flex flex-col border-l border-base-200"
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-base-100 shadow-[-20px_0_50px_rgba(0,0,0,0.2)] z-201 flex flex-col border-l border-base-200"
             >
               {/* Cabecera del Carrito */}
               <div className="p-8 flex justify-between items-center border-b border-base-200">

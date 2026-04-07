@@ -65,6 +65,7 @@ export const OrdersPage = () => {
 
     // 1. Renderiza el icono de la tienda según su categoría
     const getIconoCategoria = (categoria) => {
+        // TODO Si se piden productos de varias caategorías mostrar los iconos de todas las categorías.
         switch (categoria) {
             case "Frutería": return <Banana className="text-yellow-500" size={20} />;
             case "Panadería": return <Croissant className="text-orange-400" size={20} />;
