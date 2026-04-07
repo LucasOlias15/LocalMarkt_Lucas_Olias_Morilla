@@ -1,4 +1,4 @@
-import { MapPinCheckInside } from "lucide-react";
+import { MapPinCheckInside, PackageSearch, ClipboardList, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 
@@ -12,6 +12,8 @@ export const StorePanelPage = () => {
 
     const [store, setStore] = useState(null);
     const [products, setProducts] = useState([]);
+    const [pedidos, setPedidos] = useState([]); // 🆕 Estado para los pedidos
+    const [activeTab, setActiveTab] = useState("productos"); // 🆕 Control de pestañas
     const [loading, setLoading] = useState(true);
 
     const [imageFile, setImageFile] = useState(null);
@@ -44,6 +46,13 @@ export const StorePanelPage = () => {
                 const resProducts = await fetch(`${API_URL}/productos/comercio/${storeId}`);
                 const productsData = await resProducts.json();
                 setProducts(productsData);
+
+                // 🆕 Fetch de pedidos
+                const resPedidos = await fetch(`${API_URL}/pedidos/comercio/${storeId}`);
+                if (resPedidos.ok) {
+                    const pedidosData = await resPedidos.json();
+                    setPedidos(pedidosData);
+                }
             } catch (error) {
                 console.error("Error cargando el panel:", error);
             } finally {
@@ -182,7 +191,40 @@ export const StorePanelPage = () => {
         }
     };
 
-    // 💡 6. SEGURIDAD
+    // 🆕 6. FUNCIONES DE PEDIDOS
+    const handleUpdateOrderStatus = async (id_pedido, nuevoEstado) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_URL}/pedidos/${id_pedido}/estado`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ estado: nuevoEstado })
+            });
+
+            if (response.ok) {
+                setPedidos(pedidos.map(p => p.id_pedido === id_pedido ? { ...p, estado: nuevoEstado } : p));
+                mostrarNotificacion("Estado actualizado", "success");
+            } else {
+                mostrarNotificacion("Error al actualizar el estado", "error");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            mostrarNotificacion("Error de conexión", "error");
+        }
+    };
+
+    const formatearFecha = (fechaIso) => new Date(fechaIso).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
+    
+    const getStatusColor = (estado) => {
+        if (estado === "Completado") return "text-sea_green bg-sea_green/10";
+        if (estado === "Cancelado") return "text-error bg-error/10";
+        return "text-yellow-600 bg-yellow-400/20"; // En proceso
+    };
+
+    // 💡 7. SEGURIDAD
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user.rol !== 'dueño' || String(user.id_comercio) !== String(storeId)) {
         return (
@@ -198,7 +240,7 @@ export const StorePanelPage = () => {
 
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-base-200"><span className="loading loading-spinner loading-lg text-jungle_teal"></span></div>;
 
-    // 💡 7. LA INTERFAZ VISUAL
+    // 💡 8. LA INTERFAZ VISUAL
     return (
         <div className="min-h-screen bg-base-200 p-4 md:p-8 relative">
             <div className="max-w-6xl mx-auto">
@@ -208,68 +250,152 @@ export const StorePanelPage = () => {
                         <h1 className="text-4xl font-black text-base-content">Panel de <span className="text-jungle_teal">Gestión</span></h1>
                         <p className="text-base-content/60 font-medium">Estás editando: <span className="font-bold">{store?.nombre}</span></p>
                     </div>
-                    <button className="btn bg-jungle_teal text-white border-none rounded-2xl hover:bg-teal-700" onClick={handleOpenAdd}>
-                        + Añadir Producto
-                    </button>
+                    {/* 🆕 El botón de añadir solo sale si estamos en la pestaña de productos */}
+                    {activeTab === "productos" && (
+                        <button className="btn bg-jungle_teal text-white border-none rounded-2xl hover:bg-teal-700" onClick={handleOpenAdd}>
+                            + Añadir Producto
+                        </button>
+                    )}
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="bg-base-100 p-6 rounded-4xl shadow-xl border border-base-content/10 h-fit">
-                        <img src={store?.imagen} className="w-full h-40 object-cover rounded-2xl mb-4" alt="Tienda" />
-                        <h2 className="text-xl font-bold mb-2 text-base-content">{store?.nombre}</h2>
-                        <span className="badge badge-outline border-jungle_teal text-jungle_teal font-bold mb-4">{store?.categoria}</span>
-                        <p className="flex items-center gap-2 text-sm opacity-70 text-base-content mt-1">
-                            <MapPinCheckInside size={16} className="shrink-0" />
-                            {store?.direccion}
-                        </p>                    </div>
+                    <div className="flex flex-col gap-4">
+                        <div className="bg-base-100 p-6 rounded-4xl shadow-xl border border-base-content/10 h-fit">
+                            <img src={store?.imagen} className="w-full h-40 object-cover rounded-2xl mb-4" alt="Tienda" />
+                            <h2 className="text-xl font-bold mb-2 text-base-content">{store?.nombre}</h2>
+                            <span className="badge badge-outline border-jungle_teal text-jungle_teal font-bold mb-4">{store?.categoria}</span>
+                            <p className="flex items-center gap-2 text-sm opacity-70 text-base-content mt-1">
+                                <MapPinCheckInside size={16} className="shrink-0" />
+                                {store?.direccion}
+                            </p>
+                        </div>
+                        
+                        {/* 🆕 PESTAÑAS NAVEGADORAS */}
+                        <div className="bg-base-100 p-2 rounded-3xl shadow-xl border border-base-content/10 flex flex-col gap-2">
+                            <button 
+                                onClick={() => setActiveTab("productos")}
+                                className={`btn justify-start border-none rounded-2xl ${activeTab === "productos" ? "bg-jungle_teal text-white hover:bg-jungle_teal" : "bg-transparent hover:bg-base-200 text-base-content/70"}`}
+                            >
+                                <PackageSearch size={18} /> Mis Productos
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab("pedidos")}
+                                className={`btn justify-start border-none rounded-2xl ${activeTab === "pedidos" ? "bg-jungle_teal text-white hover:bg-jungle_teal" : "bg-transparent hover:bg-base-200 text-base-content/70"}`}
+                            >
+                                <ClipboardList size={18} /> Pedidos
+                                {pedidos.filter(p => p.estado === "En proceso").length > 0 && (
+                                    <div className="badge badge-sm badge-warning ml-auto border-none font-bold">
+                                        {pedidos.filter(p => p.estado === "En proceso").length}
+                                    </div>
+                                )}
+                            </button>
+                        </div>
+                    </div>
 
                     <div className="lg:col-span-2 bg-base-100 p-6 rounded-4xl shadow-xl border border-base-content/10">
-                        <h2 className="text-2xl font-black mb-6 text-base-content">Tus Productos</h2>
-                        <div className="overflow-x-auto">
-                            <table className="table w-full">
-                                <thead>
-                                    <tr className="border-b border-base-200 text-base-content/50 uppercase text-xs">
-                                        <th>Producto</th>
-                                        <th>Precio</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {products.map(product => (
-                                        <tr key={product.id_producto} className="hover:bg-base-200/50 transition-colors border-b border-base-200/50">
-                                            <td>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="avatar">
-                                                        <div className="mask mask-squircle w-12 h-12">
-                                                            <img src={product.imagen} alt={product.nombre} className="object-cover" />
+                        
+                        {/* ---------------- VISTA: PRODUCTOS ---------------- */}
+                        {activeTab === "productos" && (
+                            <>
+                                <h2 className="text-2xl font-black mb-6 text-base-content">Tus Productos</h2>
+                                <div className="overflow-x-auto">
+                                    <table className="table w-full">
+                                        <thead>
+                                            <tr className="border-b border-base-200 text-base-content/50 uppercase text-xs">
+                                                <th>Producto</th>
+                                                <th>Precio</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {products.map(product => (
+                                                <tr key={product.id_producto} className="hover:bg-base-200/50 transition-colors border-b border-base-200/50">
+                                                    <td>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="avatar">
+                                                                <div className="mask mask-squircle w-12 h-12">
+                                                                    <img src={product.imagen} alt={product.nombre} className="object-cover" />
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-base-content">{product.nombre}</div>
+                                                                <div className="text-sm opacity-50 text-base-content">{product.descripcion?.substring(0, 30)}...</div>
+                                                            </div>
                                                         </div>
+                                                    </td>
+                                                    <td className="font-bold text-jungle_teal">{Number(product.precio).toFixed(2)}€</td>
+                                                    <td>
+                                                        <button className="btn btn-ghost btn-xs text-info mr-2" onClick={() => handleOpenEdit(product)}>Editar</button>
+                                                        <button className="btn btn-ghost btn-xs text-error" onClick={() => setProductToDelete(product)}>Eliminar</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {products.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="3" className="text-center py-8 text-base-content/50">
+                                                        No tienes productos todavía. ¡Añade el primero!
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
+
+                        {/* ---------------- 🆕 VISTA: PEDIDOS ---------------- */}
+                        {activeTab === "pedidos" && (
+                            <>
+                                <h2 className="text-2xl font-black mb-6 text-base-content">Pedidos de Clientes</h2>
+                                <div className="flex flex-col gap-4">
+                                    {pedidos.length === 0 ? (
+                                        <div className="text-center py-12 text-base-content/50">
+                                            Aún no has recibido ningún pedido. ¡Pronto llegará el primero!
+                                        </div>
+                                    ) : (
+                                        pedidos.map(pedido => (
+                                            <div key={pedido.id_pedido} className="bg-base-200/50 p-4 rounded-3xl border border-base-200 flex flex-col md:flex-row gap-4 justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-1">
+                                                        <span className="text-xs font-bold text-base-content/40 uppercase">#LM-{pedido.id_pedido}</span>
+                                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${getStatusColor(pedido.estado)}`}>
+                                                            {pedido.estado === "En proceso" && <Clock size={10}/>}
+                                                            {pedido.estado === "Completado" && <CheckCircle2 size={10}/>}
+                                                            {pedido.estado === "Cancelado" && <XCircle size={10}/>}
+                                                            {pedido.estado}
+                                                        </span>
                                                     </div>
-                                                    <div>
-                                                        <div className="font-bold text-base-content">{product.nombre}</div>
-                                                        <div className="text-sm opacity-50 text-base-content">{product.descripcion?.substring(0, 30)}...</div>
-                                                    </div>
+                                                    <h3 className="font-bold text-base-content">{pedido.nombre_cliente}</h3>
+                                                    <p className="text-sm text-base-content/60 mb-2">{pedido.email_cliente}</p>
+                                                    <p className="text-sm text-base-content/70">
+                                                        <span className="font-bold">{pedido.productos.reduce((acc, p) => acc + p.cantidad, 0)} arts:</span> {pedido.productos.map(p => p.nombre).join(', ')}
+                                                    </p>
                                                 </div>
-                                            </td>
-                                            <td className="font-bold text-jungle_teal">{Number(product.precio).toFixed(2)}€</td>
-                                            <td>
-                                                <button className="btn btn-ghost btn-xs text-info mr-2" onClick={() => handleOpenEdit(product)}>Editar</button>
-                                                <button className="btn btn-ghost btn-xs text-error" onClick={() => setProductToDelete(product)}>Eliminar</button></td>
-                                        </tr>
-                                    ))}
-                                    {products.length === 0 && (
-                                        <tr>
-                                            <td colSpan="3" className="text-center py-8 text-base-content/50">
-                                                No tienes productos todavía. ¡Añade el primero!
-                                            </td>
-                                        </tr>
+                                                <div className="flex flex-col justify-between items-start md:items-end gap-3 border-t md:border-t-0 md:border-l border-base-300 pt-3 md:pt-0 md:pl-4">
+                                                    <div className="text-left md:text-right">
+                                                        <p className="text-xl font-black text-jungle_teal">{Number(pedido.total).toFixed(2)}€</p>
+                                                        <p className="text-xs text-base-content/50">{formatearFecha(pedido.fecha)}</p>
+                                                    </div>
+                                                    <select 
+                                                        className="select select-bordered select-sm rounded-xl bg-base-100 font-bold"
+                                                        value={pedido.estado}
+                                                        onChange={(e) => handleUpdateOrderStatus(pedido.id_pedido, e.target.value)}
+                                                    >
+                                                        <option value="En proceso">⏳ En proceso</option>
+                                                        <option value="Completado">✅ Completado</option>
+                                                        <option value="Cancelado">❌ Cancelado</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        ))
                                     )}
-                                </tbody>
-                            </table>
-                        </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
-                {/* 💡 8. EL MODAL FLOTANTE */}
+                {/* 💡 8. EL MODAL FLOTANTE DE PRODUCTOS */}
                 {isModalOpen && (
                     <div className="modal modal-open bg-black/60 backdrop-blur-sm transition-all z-60">
                         <div className="modal-box rounded-4xl shadow-2xl bg-base-100">
@@ -293,7 +419,6 @@ export const StorePanelPage = () => {
                                     value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
                                 />
 
-                                {/* 👇 ATENCIÓN AL REQUIRED 👇 */}
                                 <input
                                     type="file"
                                     accept="image/*"

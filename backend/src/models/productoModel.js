@@ -66,7 +66,6 @@ async function deleteProducto(id_producto) {
 
 async function getAllProductosWithComercio() {
     try {
-        // Seleccionamos solo lo necesario
         const [result] = await pool.query(`
             SELECT 
                 p.id_producto, 
@@ -75,6 +74,7 @@ async function getAllProductosWithComercio() {
                 p.imagen, 
                 p.descripcion,
                 p.stock,
+                p.id_comercio, /* 👈 ¡ESTA ES LA PIEZA QUE FALTABA! */
                 c.nombre AS nombre_comercio, 
                 c.categoria
             FROM producto p

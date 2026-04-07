@@ -4,47 +4,39 @@ import { persist } from 'zustand/middleware';
 export const useCartStore = create(
   persist(
     (set, get) => ({
-      // 1. EL MUEBLE PRINCIPAL
+      // EL ALMACEN PRINCIPAL
       // Aquí se guardarán todos los carritos. 
       // Quedará algo así por detrás: { "id_paco": [{pan}, {agua}], "id_maria": [{carne}] }
       carts: {}, 
 
-      // --- ACCIONES PRINCIPALES ---
 
-      // 1️⃣ AÑADIR AL CARRITO
+      // 1 AÑADIR AL CARRITO
       addToCart: (userId, product) => {
-        // Por seguridad: si entra alguien sin iniciar sesión (sin ID), detenemos la función.
         if (!userId) return; 
 
-        // Paso A: Miramos el mueble entero
         const allCarts = get().carts;
         
-        // Paso B: Abrimos solo la taquilla de nuestro usuario. 
-        // Si es nuevo y no tiene nada, le asignamos una cesta vacía: []
         const userCart = allCarts[userId] || []; 
         
-        // Paso C: Revisamos si el producto que quiere añadir YA ESTÁ en su cesta.
         const existing = userCart.find(item => item.id_producto === product.id_producto);
 
         if (existing) {
             // Si ya lo tiene, recorremos su cesta uno a uno con .map()
-            // Cuando encontremos ese producto, le sumamos +1 a su cantidad.
             const updatedCart = userCart.map(item =>
               item.id_producto === product.id_producto
+              // Si el ID coincide, devolvemos el mismo producto pero con la cantidad aumentada en 1. Si no, lo dejamos igual.
                 ? { ...item, quantity: (item.quantity || 1) + 1 }
                 : item
             );
-            // Finalmente, guardamos el mueble entero, pero actualizando su taquilla.
             set({ carts: { ...allCarts, [userId]: updatedCart } });
         } else {
-            // Si no lo tenía, cogemos todo lo que ya había en su cesta (...userCart)
-            // y metemos el producto nuevo al final, indicando que hay 1 unidad.
+            // Si no lo tiene, lo añadimos con cantidad 1. Hacemos una copia de su carrito actual y le añadimos el nuevo producto al final.
             const updatedCart = [...userCart, { ...product, quantity: 1 }];
             set({ carts: { ...allCarts, [userId]: updatedCart } });
         }
       },
 
-      // 2️⃣ ELIMINAR DEL CARRITO (Botón de la basura)
+      // 2 ELIMINAR DEL CARRITO 
       removeFromCart: (userId, productId) => {
         if (!userId) return;
         const allCarts = get().carts;
@@ -57,9 +49,8 @@ export const useCartStore = create(
         set({ carts: { ...allCarts, [userId]: updatedCart } });
       },
 
-      // 3️⃣ ACTUALIZAR CANTIDAD (Botones de + y - dentro del carrito)
+      // 3 ACTUALIZAR CANTIDAD 
       updateQuantity: (userId, productId, newQuantity) => {
-        // Evitamos que pongan "0" o números negativos. Para borrar, ya está removeFromCart.
         if (!userId || newQuantity < 1) return;
         const allCarts = get().carts;
         const userCart = allCarts[userId] || [];
@@ -71,13 +62,13 @@ export const useCartStore = create(
         set({ carts: { ...allCarts, [userId]: updatedCart } });
       },
 
-      // --- FUNCIONES DE CÁLCULO (Para mostrar arriba en el Header) ---
+      // FUNCIONES DE CÁLCULO (Para mostrar arriba en el Header) 
 
       // Cuántos artículos hay en total (Ej: 3 panes + 2 aguas = 5)
       getTotalItems: (userId) => {
         if (!userId) return 0;
         const userCart = get().carts[userId] || [];
-        // Reduce va sumando las cantidades de cada producto
+        // Reduce recorre cada producto del carrito, coge su cantidad (o 0 si no tiene) y lo suma todo.
         return userCart.reduce((acumulador, item) => acumulador + (item.quantity || 0), 0);
       },
       
@@ -89,7 +80,7 @@ export const useCartStore = create(
         return userCart.reduce((acumulador, item) => acumulador + (item.precio * (item.quantity || 0)), 0);
       },
 
-      // 4️⃣ VACIAR EL CARRITO (La usaremos cuando simulemos el pago con éxito)
+      // 4 VACIAR EL CARRITO 
       clearUserCart: (userId) => {
         if (!userId) return;
         const allCarts = get().carts;
@@ -98,7 +89,7 @@ export const useCartStore = create(
       }
     }),
     
-    // El nombre que tendrá nuestro mueble en las tripas del navegador (DevTools > Local Storage)
+    // El nombre que tendrá el carrito en el navegador (DevTools > Local Storage)
     { name: 'localmarkt-cart' } 
   )
 );

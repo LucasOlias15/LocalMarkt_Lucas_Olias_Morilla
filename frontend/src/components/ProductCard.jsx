@@ -2,22 +2,21 @@ import { motion } from 'framer-motion';
 import { useCartStore } from '../store/useCartStore'; // Importamos el hook de Zustand para acceder al carrito
 
 export const ProductCard = ({ product }) => {
-  
-  // 📍 TU TURNO:
-  // ¿Cómo extraerías la función 'addToCart' de nuestro CartContext usando useContext?
-  // Pista: Es exactamente la misma línea que usamos en CartDrawer, pero solo sacando 'addToCart'
-  // const { ... } = ...
 
   const addToCart = useCartStore((state) => state.addToCart);
 
- const handleAdd = () => {
+const handleAdd = () => {
+
   const productForCart = {
-    id_producto: product.id, // Traducción de nombres si es necesario
-    nombre: product.name,
-    precio: product.price,
-    imagen: product.img
+    id_producto: product.id || product.id_producto, 
+    nombre: product.name || product.nombre,
+    precio: product.price || product.precio,
+    imagen: product.img || product.imagen,
+    id_comercio: product.id_comercio // Aquí recogemos el ID de la tienda
   };
+
   addToCart(productForCart);
+  // Emitimos un evento personalizado para abrir el carrito
   window.dispatchEvent(new CustomEvent('openCart'));
 };
 

@@ -10,7 +10,9 @@ export const Header = ({ toggleMenu }) => {
     // 1. PRIMERO: Declaramos los estados locales y de enrutamiento
     const [user, setUser] = useState(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const [location] = useLocation();
+    
+    // 👇 CAMBIO 1: Extraemos también 'setLocation' para navegar sin recargar la página 👇
+    const [location, setLocation] = useLocation();
 
     // 2. SEGUNDO: Extraemos las cosas de Zustand
     const carts = useCartStore((state) => state.carts);
@@ -71,16 +73,35 @@ export const Header = ({ toggleMenu }) => {
     }, [location]);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        clearCart();
-        setUser(null);
-        window.location.href = "/";
+        try {
+            // 1. Vaciamos el almacenamiento (Esto es lo más crítico)
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            
+            // 2. Intentamos limpiar el estado de Zustand
+            // (Si esto falla por algo, saltará al catch sin romper la web)
+            if (typeof clearCart === 'function') {
+                clearCart();
+            }
+
+            // 3. Quitamos el foco al menú para que se cierre visualmente
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+            
+            // 4. Limpiamos el estado local
+            setUser(null);
+            
+        } catch (error) {
+            console.error("Bug cazado durante el cierre de sesión:", error);
+        } finally {
+            // replace() borra el historial de esa pestaña y te manda al inicio.
+            window.location.replace("/");
+        }
     };
 
     return (
         <>
-            {/* 👇 AQUÍ ESTÁ EL CAMBIO: Fondo sólido (bg-base-100) y sin blur 👇 */}
             <header className="navbar bg-base-100 shadow-sm px-4 sticky top-0 z-200 h-20 transition-all duration-300 border-b border-base-200">
 
                 {/* Izquierda: Drawer (Menú) */}
@@ -165,7 +186,7 @@ export const Header = ({ toggleMenu }) => {
                     </div>
 
                     {/* 3. BOTÓN CARRITO */}
-                    <button onClick={() => setIsCartOpen(true)} className="btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal transition-all shadow-md relative overflow-visible">
+                    <button onClick={() => setIsCartOpen(true)} className="btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal transition-all shadow-md relative overflow-visible cursor-pointer">
                         <motion.div
                             key={isCartOpen}
                             initial={{ scale: 1 }}
@@ -206,7 +227,7 @@ export const Header = ({ toggleMenu }) => {
                                     <li><Link href="/perfil">Mi Perfil</Link></li>
                                     <li><Link href='/perfil/pedidos'>Mis Pedidos</Link></li>
                                     <div className="divider my-1"></div>
-                                    <li><button onClick={handleLogout} className="text-error hover:bg-error/10">Cerrar sesión</button></li>
+                                    <li><button onClick={handleLogout} className="text-error hover:bg-error/10 cursor-pointer">Cerrar sesión</button></li>
                                 </>
                             ) : (
                                 <>

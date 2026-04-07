@@ -1,4 +1,4 @@
-import { crearNuevoPedido, obtenerPedidosPorUsuario } from "../models/pedidoModel.js";
+import { obtenerPedidosPorUsuario, crearNuevoPedido, obtenerPedidosPorComercio, actualizarEstadoPedido } from "../models/pedidoModel.js";
 
 export const getMisPedidos = async (req, res) => {
     try {
@@ -54,22 +54,16 @@ export const getMisPedidos = async (req, res) => {
 
 export const simularPedido = async (req, res) => {
     try {
-        // 1. Extraemos los datos que nos va a enviar el frontend en formato JSON
+        // Extraemos los datos que nos va a enviar el frontend en formato JSON
         const { id_usuario, id_comercio, total, productos } = req.body;
 
-        // Validamos un poco por seguridad
+        // Validamos mínima por seguridad
         if (!id_usuario || !productos || productos.length === 0) {
             return res.status(400).json({ error: "El carrito está vacío o faltan datos" });
         }
-
-        // 2. 📝 RETO: Llama a tu función crearNuevoPedido pasándole las 4 variables de arriba.
-        // Recuerda que es una promesa (usa await) y guarda lo que devuelve en una variable llamada 'nuevoId'
         
         const nuevoId = await crearNuevoPedido(id_usuario, id_comercio, total, productos)
 
-        // 3. 📝 RETO: Devuelve una respuesta JSON al frontend con código 201 (Created)
-        // Puedes enviar un objeto con un mensaje de éxito y el 'nuevoId'
-        
         return res.status(201).json({
             message: "Nuevo pedido creado con exito",
             nuevoId: nuevoId
@@ -78,5 +72,38 @@ export const simularPedido = async (req, res) => {
     } catch (error) {
         console.error("Error al simular el pedido:", error);
         return res.status(500).json({ error: "Error interno al procesar el pago" });
+    }
+};
+export const getPedidosPorComercio = async (req, res) => {
+    try {
+        const rows = await obtenerPedidosPorComercio(req.params.id_comercio);
+        const pedidosMap = {};
+        
+        for (const row of rows) {
+            if (!pedidosMap[row.id_pedido]) {
+                pedidosMap[row.id_pedido] = {
+                    id_pedido: row.id_pedido, fecha: row.fecha, total: row.total, estado: row.estado,
+                    nombre_cliente: row.nombre_cliente, email_cliente: row.email_cliente, productos: []
+                };
+            }
+            pedidosMap[row.id_pedido].productos.push({
+                nombre: row.nombre_producto, cantidad: row.cantidad, precio_unitario: row.precio_unitario
+            });
+        }
+        return res.json(Object.values(pedidosMap));
+    } catch (error) {
+        return res.status(500).json({ error: "Error al obtener pedidos" });
+    }
+};
+
+export const updateEstadoPedido = async (req, res) => {
+    try {
+        const { id_pedido } = req.params;
+        const { estado } = req.body;
+        const success = await actualizarEstadoPedido(id_pedido, estado);
+        if (success) return res.json({ message: "Estado actualizado" });
+        return res.status(404).json({ error: "Pedido no encontrado" });
+    } catch (error) {
+        return res.status(500).json({ error: "Error interno" });
     }
 };

@@ -17,7 +17,7 @@ export const ShopDetail = () => {
     const fetchData = async () => {
      try {
     setLoading(true);
-    setErrorTienda(false); // Reseteamos por si acaso
+    setErrorTienda(false); // Reiniciamos el error cada vez que intentamos cargar una tienda nueva
 
     const [resProductos, resComercio] = await Promise.all([
       fetch(`http://localhost:3000/api/productos/comercio/${params.id}`),
@@ -26,8 +26,8 @@ export const ShopDetail = () => {
 
     // Si la respuesta del comercio no es OK (por ejemplo, un 404)
     if (!resComercio.ok) {
-        setErrorTienda(true);
-        return; // Salimos de la función
+        setErrorTienda(true); // Activamos el estado de error para mostrar la página 404 
+        return; 
     }
 
     const dataProductos = await resProductos.json();
@@ -49,7 +49,7 @@ export const ShopDetail = () => {
           name: p.nombre,
           price: p.precio,
           description: p.descripcion,
-          img: p.imagen || "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400"
+          img: p.imagen
         }));
 
         setProducts(productosFormateados);
@@ -60,8 +60,8 @@ export const ShopDetail = () => {
   }
     };
 
-    if (params?.id) fetchData();
-  }, [params?.id]);
+    if (params?.id) fetchData(); // Solo intentamos cargar si tenemos un ID válido
+  }, [params?.id]); // Volvemos a ejecutar el efecto cada vez que cambie el ID de la ruta
 
   if (errorTienda) {
     return (
@@ -197,7 +197,7 @@ export const ShopDetail = () => {
         {loading ? (
           <div className="w-full py-20 flex flex-col items-center justify-center text-jungle_teal">
             <span className="loading loading-spinner loading-lg mb-4"></span>
-            <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando huerto...</p>
+            <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando productos...</p>
           </div>
         ) : products.length === 0 ? (
           <div className="w-full py-20 text-center opacity-50 font-bold text-xl">
