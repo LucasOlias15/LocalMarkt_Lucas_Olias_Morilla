@@ -24,7 +24,7 @@ export const ExplorePage = () => {
     const [favProductos, setFavProductos] = useState([]);
     const [favComercios, setFavComercios] = useState([]);
 
-    const categorias = ["Todas", "Frutería", "Panadería", "Carnicería", "Bio", "Textiles y moda", "Artesanía y regalos"];
+    const categorias = ["Todas", "Frutería", "Panadería", "Carnicería", "Bio", "Textiles y moda", "Artesanía y regalos", "Pastelería"];
     const usuario = JSON.parse(localStorage.getItem('user'));
 
     // --- Enrutamiento (Wouter) ---

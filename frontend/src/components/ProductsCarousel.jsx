@@ -110,7 +110,7 @@ export const ProductsCarousel = () => {
             >
               <motion.div
                 whileHover={{ y: -8 }}
-                className="w-full bg-base-200 rounded-[2rem] shadow-sm hover:shadow-xl border border-base-300 overflow-hidden relative flex flex-col h-full transition-all duration-300"
+                className="w-full bg-base-200 rounded-4xl shadow-sm hover:shadow-xl border border-base-300 overflow-hidden relative flex flex-col h-full transition-all duration-300"
               >
                 {/* 🔗 Enlace a la tienda (envuelve imagen e info) */}
                 <Link href={`/tienda/${product.id_comercio}`}>

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "wouter"; 
 import { Header } from "./Header"; 
-import { Banana, Croissant, Beef, Leaf, House, PackageSearch, ShoppingBag, LayoutList, Wrench, Shirt, Amphora, LocateFixed } from "lucide-react";
+// 1. IMPORTAMOS EL NUEVO ICONO (Cake)
+import { Banana, Croissant, Beef, Leaf, House, PackageSearch, ShoppingBag, LayoutList, Wrench, Shirt, Amphora, LocateFixed, Cake } from "lucide-react";
 
 export const TopMenuLayout = ({ children }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -99,11 +100,19 @@ export const TopMenuLayout = ({ children }) => {
                         {/* Decoración de fondo suave (un toque de luz) */}
                         <div className="absolute -top-10 -right-10 w-40 h-40 bg-jungle_teal/10 rounded-full blur-2xl pointer-events-none"></div>
 
-                        <h3 className="font-bold text-jungle_teal mb-4 text-lg flex items-center gap-2">
-                            Explorar por Categorías
-                        </h3>
+                        {/* 2. ENCABEZADO CON BOTÓN DE "VER TODAS" */}
+                        <div className="flex justify-between items-center mb-4 relative z-10">
+                            <h3 className="font-bold text-jungle_teal text-lg flex items-center gap-2">
+                                Explorar por Categorías
+                            </h3>
+                            <Link href="/explorar">
+                                <a onClick={closeMenu} className="text-sm font-bold text-jungle_teal/70 hover:text-jungle_teal transition-colors">
+                                    Ver todas &rarr;
+                                </a>
+                            </Link>
+                        </div>
 
-                        {/* Grid de 4 categorías rápidas */}
+                        {/* Grid de categorías */}
                         <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
                             {/* Categoría 1: Fruterías */}
                             <Link href="/explorar?categoria=Frutería">
@@ -162,6 +171,16 @@ export const TopMenuLayout = ({ children }) => {
                                         <Shirt className="w-6 h-6"/>
                                     </div>
                                     <span className="font-medium text-base-content">Textiles y moda</span>
+                                </a>
+                            </Link>
+
+                            {/* 3. NUEVA CATEGORÍA: Pastelería */}
+                            <Link href="/explorar?categoria=Pastelería">
+                                <a onClick={closeMenu} className="flex items-center gap-3 p-3 bg-base-100 rounded-xl hover:shadow-md hover:border-pink-500 border border-transparent transition-all cursor-pointer group">
+                                    <div className="bg-pink-500/10 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                                        <Cake className="w-6 h-6"/>
+                                    </div>
+                                    <span className="font-medium text-base-content">Pastelerías</span>
                                 </a>
                             </Link>
                         </div>

@@ -10,33 +10,44 @@ export const getMisPedidos = async (req, res) => {
             return res.status(200).json([]);
         }
 
-        // 1. Agrupamos los datos usando .reduce()
+       // 1. Agrupamos los datos usando .reduce()
         const pedidosAgrupadosObj = datosPedido.reduce((archivador, filaActual) => {
             const id = filaActual.id_pedido;
 
-            // Si la "carpeta" del pedido no existe, la creamos con los datos generales
+            // Si la "carpeta" del pedido no existe, la creamos (ahora con un array de tiendas)
             if (!archivador[id]) {
                 archivador[id] = {
                     id_pedido: id,
                     fecha: filaActual.fecha,
                     total: filaActual.total,
                     estado: filaActual.estado,
-                    tienda: filaActual.nombre_comercio,
-                    categoria: filaActual.categoria_comercio,
-                    productos: [] // Iniciamos el array de productos vacío
+                    tiendas: [] // 👈 Magia: Un array para guardar todas las tiendas de este pedido
                 };
             }
 
-            // Metemos el producto actual en el array de productos de su pedido
-            archivador[id].productos.push({
+            // Buscamos si ya hemos creado la sub-carpeta de esta tienda
+            let tiendaActual = archivador[id].tiendas.find(t => t.nombre === filaActual.nombre_comercio);
+
+            // Si no existe, la creamos y la metemos en el pedido
+            if (!tiendaActual) {
+                tiendaActual = {
+                    nombre: filaActual.nombre_comercio,
+                    categoria: filaActual.categoria_comercio,
+                    productos: []
+                };
+                archivador[id].tiendas.push(tiendaActual);
+            }
+
+            // Finalmente, metemos el producto en la sub-carpeta de su tienda correspondiente
+            tiendaActual.productos.push({
                 nombre: filaActual.nombre_producto,
                 cantidad: filaActual.cantidad,
-                precio_unitario: filaActual.precio_unitario
+                precio_unitario: filaActual.precio_unitario,
+                imagen: filaActual.imagen 
             });
 
             return archivador;
         }, {});
-
         // 2. Convertimos el objeto gigante en un Array normal para el frontend
         const pedidosFinales = Object.values(pedidosAgrupadosObj);
 

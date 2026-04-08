@@ -403,8 +403,6 @@ export const StorePanelPage = () => {
                                 {editingId ? "Editar Producto" : "Añadir Nuevo Producto"}
                             </h3>
 
-                            {/*TODO Estilo del formulario acorde a la página*/}
-
                             <form onSubmit={handleSaveProduct} className="flex flex-col gap-4">
                                 <input type="text" placeholder="Nombre del producto" required className="input input-bordered w-full bg-base-200 focus:bg-base-100 transition-colors"
                                     value={newProduct.nombre} onChange={(e) => setNewProduct({ ...newProduct, nombre: e.target.value })}
