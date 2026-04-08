@@ -255,7 +255,7 @@ export const OrdersPage = () => {
                                         <div key={idx} className="flex justify-between items-center p-4 bg-base-100 border border-base-200 rounded-2xl hover:border-jungle_teal/30 transition-colors">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-xl bg-base-200 flex items-center justify-center text-xl">
-                                                    {/* TODO Mostrar Imagen del producto comprado aqií */}
+                                                    {/* TODO Mostrar Imagen del producto comprado aquí */}
                                                     {prod.image}
                                                 </div>
                                                 <div>

@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 
-//TODO Añadir funcionalidad Crear cuenta , ruta /registro
-
 export const Profile = () => {
   const [user, setUser] = useState(null);
   const [, setLocation] = useLocation();
@@ -390,7 +388,7 @@ export const Profile = () => {
                       </div>
                       <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-2 flex items-center justify-between"><span>Nueva Contraseña</span><span className="text-[10px] font-normal lowercase opacity-70">(opcional)</span></label>
-                        <input type="password" name="nuevaClave" value={formData.nuevaClave} onChange={handleInputChange} className="w-full p-4 rounded-2xl bg-base-300 border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium" placeholder="Dejar en blanco si no cambia" />
+                        <input type="password" name="nuevaClave" value={formData.nuevaClave} onChange={handleInputChange} className="w-full p-4 rounded-2xl bg-base-300   border-2 border-transparent text-base-content placeholder:text-base-content/40 outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-4 focus:ring-jungle_teal/10 transition-all font-medium" placeholder="Dejar en blanco si no cambia" />
                       </div>
                     </div>
 

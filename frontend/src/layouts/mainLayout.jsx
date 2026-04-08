@@ -1,12 +1,15 @@
 import { Footer } from '../components/Footer';
 import { TopMenuLayout } from '../components/TopMenuLayout';
 import { FloatingMapButton } from '../components/FloatingMapButton'; 
+import { ScrollToTop } from '../components/ScrollToTop'; 
 
 export const MainLayout = ({ children }) => {
   return (
     <TopMenuLayout>
         
+        
         <div className="flex flex-col min-h-[calc(100vh-64px)] relative"> 
+          <ScrollToTop />
           <main className="grow overflow-x-hidden">
             {children} 
           </main>

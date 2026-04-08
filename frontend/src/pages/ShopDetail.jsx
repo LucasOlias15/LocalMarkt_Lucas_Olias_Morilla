@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { useRoute } from 'wouter';
 import { ProductCard } from '../components/ProductCard';
 
+//TODO Añadir funcionalidad de añadir a carrito y cambiar botón de + para hacer toggle de favorito
+
 export const ShopDetail = () => {
   const [, params] = useRoute("/tienda/:id");
 
