@@ -119,7 +119,7 @@ export const OrdersPage = () => {
                 {!tieneHistorial ? (
                     // ESTADO: El usuario nunca ha comprado nada
                     <div className="flex flex-col items-center justify-center text-center p-12 bg-base-100 rounded-[3rem] border border-base-200 shadow-sm mt-10">
-                        <div className="w-32 h-32 mb-6 text-jungle_teal/30 relative">
+                        <div className="w-32 h-32 mb-6 text-jungle_teal relative">
                             <ShoppingBag className="w-full h-full" strokeWidth={1} />
                         </div>
                         <h3 className="font-black text-3xl text-base-content mb-3">Tu cesta está vacía</h3>
@@ -243,7 +243,7 @@ export const OrdersPage = () => {
             {/* ========================================== */}
             <AnimatePresence>
                 {pedidoSeleccionado && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-300 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                         {/* Animación fluida de entrada/salida del modal */}
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}

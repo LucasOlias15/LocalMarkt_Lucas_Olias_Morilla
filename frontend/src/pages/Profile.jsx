@@ -1,4 +1,4 @@
-import { UserRoundKey, UserRoundCog, Heart, Store, ShoppingBasket, ExternalLink, ArrowRight, Settings } from "lucide-react";
+import { UserRoundKey, UserRoundCog, Heart, Store, ShoppingBasket, ExternalLink, ArrowRight, Settings, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -183,8 +183,8 @@ export const Profile = () => {
           
           {user.rol === 'dueño' ? (
             <>
-              {/* BLOQUE DUEÑO 1 (2 Columnas) */}
-              <div className="md:col-span-2 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/30 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+              {/* BLOQUE DUEÑO 1 */}
+              <div className="md:col-span-1 bg-base-100 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/30 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-jungle_teal transition-colors">Mi Tienda</h2>
                   <p className="text-base-content/60 max-w-sm">Gestiona tu inventario, revisa pedidos activos y actualiza tu perfil público.</p>
@@ -198,11 +198,35 @@ export const Profile = () => {
                 </div>
               </div>
 
-              {/* BLOQUE DUEÑO 2 (1 Columna) */}
-              <div className="md:col-span-1 bg-jungle_teal text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-sea_green transition-colors cursor-pointer flex flex-col justify-center">
+              {/* BLOQUE DUEÑO 2 */}
+              <div className="md:col-span-1 bg-green-900 text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-sea_green transition-colors cursor-pointer flex flex-col justify-center">
                 <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">Ventas del mes</h2>
                 <div className="text-6xl font-black mb-1">24</div>
                 <p className="text-white/70 text-sm font-medium">Pedidos completados</p>
+              </div>
+              {/* BLOQUE FAVORITOS DEL DUEÑO 3 */}
+              <div 
+                onClick={() => {
+                  setShowFavorites(!showFavorites);
+                  if (!showFavorites) setShowSettings(false); 
+                }}
+                className={`md:col-span-1 rounded-[2.5rem] p-8 shadow-sm transition-all duration-300 cursor-pointer flex flex-col justify-center relative overflow-hidden ${
+                  showFavorites
+                    ? 'bg-red-500 text-white shadow-xl shadow-red-500/20 scale-[0.97]' // Se hunde cuando está activo
+                    : 'bg-jungle_teal text-white hover:bg-sea_green hover:-translate-y-1'
+                }`}
+              >
+                <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="relative z-10">
+                    {/* El corazón ya no gira, pero late suavemente y se rellena si está activo */}
+                    <Heart className={`w-12 h-12 mb-3 transition-all duration-500 ${showFavorites ? 'fill-white drop-shadow-md scale-110' : 'fill-white/20'}`} />
+                    <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
+                        Tus Favoritos
+                    </h2>
+                    <p className="text-white/80 text-sm font-medium">
+                       Ver guardados
+                    </p>
+                </div>
               </div>
             </>
           ) : (
@@ -345,7 +369,7 @@ export const Profile = () => {
               className="flex items-center justify-between group cursor-pointer"
             >
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${showSettings ? 'bg-yellow-400 text-yellow-900' : 'bg-base-200 text-base-content/50 group-hover:bg-yellow-100 group-hover:text-yellow-600'}`}>
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${showSettings ? 'bg-yellow text-white' : 'bg-base-200 text-base-content group-hover:bg-yellow-100 group-hover:text-yellow-600'}`}>
                   <Settings className={`w-7 h-7 transition-transform duration-500 ${showSettings ? 'rotate-90' : ''}`} />
                 </div>
                 <div>
@@ -366,11 +390,9 @@ export const Profile = () => {
                   className="overflow-hidden"
                 >
                   <form onSubmit={handleSave} className="mt-8 pt-8 border-t border-base-200">
-                    <div className="mb-6 p-5 bg-info/10 border border-info/20 rounded-2xl flex gap-3 text-info items-start">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 mt-0.5 shrink-0">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                      </svg>
-                      <p className="text-sm font-medium">Por tu seguridad, necesitas introducir tu contraseña actual para guardar cualquier cambio.</p>
+                    <div className="mb-6 p-5 bg-yellow-700 border border-yellow rounded-2xl flex gap-3 text-info items-start">
+                      <Lock className="text-yellow-300"/>
+                      <p className="text-sm font-medium text-yellow-300">Por tu seguridad, necesitas introducir tu contraseña actual para guardar cualquier cambio.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
