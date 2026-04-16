@@ -2,14 +2,11 @@ import pool from "../db/db.js"; // <-- Asegúrate de que la ruta a tu db es corr
 
 export const toggleFavorito = async (req, res) => {
     try {
-        // 1. Recibir los datos del frontend
+        
         const { id_usuario, id_producto, id_comercio } = req.body;
 
-        if (!id_usuario) {
-            return res.status(401).json({ message: "Inicio de sesion necesario para añadir a favoritos" });
-        }
+        if (!id_usuario) return res.status(401).json({ message: "Inicio de sesión necesario" });
         
-        // 2. Comprobar si ya existe
         let queryCheck = '';
         let queryParams = [id_usuario];
 
@@ -20,31 +17,28 @@ export const toggleFavorito = async (req, res) => {
             queryCheck = 'SELECT * FROM favorito WHERE id_usuario = ? AND id_comercio = ?';
             queryParams.push(id_comercio);
         } else {
-            return res.status(400).json({ message: "Tienes que enviar id de usuario o id de comercio" });
+            return res.status(400).json({ message: "Faltan datos" });
         }
 
         const [existing] = await pool.query(queryCheck, queryParams);
         
-        // 3. Borrar (si existe) o Insertar (si no existe)
         if (existing.length > 0) {  
             const id_favorito = existing[0].id_favorito;
-
             await pool.query('DELETE FROM favorito WHERE id_favorito = ?', [id_favorito]);
-            return res.status(200).json({ message: "Eliminado de favoritos", isFavorite: false });
-
+            return res.status(200).json({ message: "Eliminado", isFavorite: false });
         } else {
             if (id_comercio) {
-                await pool.query('INSERT INTO favorito (id_usuario, id_comercio) VALUES (?, ?)',[id_usuario, id_comercio]);
+                const [result] = await pool.query('INSERT INTO favorito (id_usuario, id_comercio) VALUES (?, ?)',[id_usuario, id_comercio]);
             } else {
-                await pool.query('INSERT INTO favorito (id_usuario, id_producto) VALUES (?, ?)', [id_usuario, id_producto]);
+                const [result] = await pool.query('INSERT INTO favorito (id_usuario, id_producto) VALUES (?, ?)', [id_usuario, id_producto]);
             }
-            return res.status(200).json({ message: "Añadido a favoritos", isFavorite: true });
+            return res.status(200).json({ message: "Añadido", isFavorite: true });
         }
     } catch (error) {
-        console.error("Error en toggleFavorito:", error); // Añadido un console.log para ver errores reales en la terminal
+        console.log(" ERROR GRAVE EN LA BASE DE DATOS:", error.message); 
         res.status(500).json({ message: "Error en el servidor" });
     }
-};  
+};
 
 export const getFavoritos = async (req, res) => {
     try {
