@@ -21,7 +21,7 @@ export const ShopDetail = () => {
 
   // El estado para guardar la lista de IDs favoritos de este usuario
   const [favProductos, setFavProductos] = useState([]);
-const [favComercios, setFavComercios] = useState([]); 
+  const [favComercios, setFavComercios] = useState([]);
 
   // 2. LÓGICA (PETICIÓN AL BACKEND)
   useEffect(() => {
@@ -61,7 +61,7 @@ const [favComercios, setFavComercios] = useState([]);
             setFavComercios(
               dataFavs
                 .filter((fav) => fav.id_comercio)
-                .map((fav) => fav.id_comercio)
+                .map((fav) => fav.id_comercio),
             );
           }
         }
@@ -87,6 +87,7 @@ const [favComercios, setFavComercios] = useState([]);
           price: p.precio,
           description: p.descripcion,
           img: p.imagen,
+          id_comercio: Number(params.id), // 👇 ESTA ES LA LÍNEA SALVAVIDAS 👇
         }));
 
         setProducts(productosFormateados);
@@ -109,7 +110,7 @@ const [favComercios, setFavComercios] = useState([]);
 
     // Actualizamos el array visualmente
     if (yaEsFavorita) {
-      setFavComercios(favComercios.filter(id => id !== idComercioNum));
+      setFavComercios(favComercios.filter((id) => id !== idComercioNum));
     } else {
       setFavComercios([...favComercios, idComercioNum]);
     }
@@ -117,12 +118,12 @@ const [favComercios, setFavComercios] = useState([]);
     // Enviamos a la BD
     try {
       await fetch(`http://localhost:3000/api/favoritos/toggleFavs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_usuario: usuario.id || usuario.id_usuario,
-          id_comercio: idComercioNum
-        })
+          id_comercio: idComercioNum,
+        }),
       });
     } catch (error) {
       console.error("Error al guardar tienda", error);
@@ -200,28 +201,34 @@ const [favComercios, setFavComercios] = useState([]);
                 >
                   {/* Aquí inyectamos el nombre real */}
                   {/* Cabecera del Comercio con Botón Minimalista */}
-<div className="flex items-center gap-6 mb-8">
-  <h1 className="text-5xl md:text-7xl font-black text-base-content tracking-tighter">
-    {shopInfo.name}
-  </h1>
-  
-  <button
-    onClick={handleToggleTienda}
-    className={`group p-4 rounded-2xl transition-all duration-500 cursor-pointer backdrop-blur-md border-2 ${
-      favComercios.includes(Number(params.id))
-        ? "bg-red-500/10 border-red-500/20 text-red-500 shadow-lg shadow-red-500/10"
-        : "bg-base-200/50 border-transparent text-base-content/30 hover:text-red-400 hover:bg-red-50/50"
-    }`}
-    title={favComercios.includes(Number(params.id)) ? "Quitar de favoritos" : "Añadir a favoritos"}
-  >
-    <Heart 
-      size={32} 
-      className={`transition-transform duration-300 group-active:scale-125 ${
-        favComercios.includes(Number(params.id)) ? "fill-current" : "fill-none"
-      }`} 
-    />
-  </button>
-</div>
+                  <div className="flex items-center gap-6 mb-8">
+                    <h1 className="text-5xl md:text-7xl font-black text-base-content tracking-tighter">
+                      {shopInfo.name}
+                    </h1>
+
+                    <button
+                      onClick={handleToggleTienda}
+                      className={`group p-4 rounded-2xl transition-all duration-500 cursor-pointer backdrop-blur-md border-2 ${
+                        favComercios.includes(Number(params.id))
+                          ? "bg-red-500/10 border-red-500/20 text-red-500 shadow-lg shadow-red-500/10"
+                          : "bg-base-200/50 border-transparent text-base-content/30 hover:text-red-400 hover:bg-red-50/50"
+                      }`}
+                      title={
+                        favComercios.includes(Number(params.id))
+                          ? "Quitar de favoritos"
+                          : "Añadir a favoritos"
+                      }
+                    >
+                      <Heart
+                        size={32}
+                        className={`transition-transform duration-300 group-active:scale-125 ${
+                          favComercios.includes(Number(params.id))
+                            ? "fill-current"
+                            : "fill-none"
+                        }`}
+                      />
+                    </button>
+                  </div>
 
                   <div className="flex flex-wrap gap-3 mb-8">
                     <span className="badge badge-lg bg-jungle_teal dark:bg-jungle_teal-400 text-white border-none py-4 px-6 font-bold shadow-lg shadow-jungle_teal/20">

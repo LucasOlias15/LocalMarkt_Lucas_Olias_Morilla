@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "../store/useCartStore";
 import { useState } from "react";
 import { Link } from "wouter";
-import { AlertCircle, CheckCircle2 } from "lucide-react"; // 👈 Importamos iconos para las alertas
+import { AlertCircle, CheckCircle2, ShoppingCart } from "lucide-react"; // 👈 Importamos iconos para las alertas
 
 export const CartDrawer = ({ isOpen, onClose }) => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -181,7 +181,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
                 </div>
               ) : cart.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center opacity-50">
-                  <span className="text-6xl mb-4">🛒</span>
+                    <ShoppingCart className="w-18 h-18 mb-2" />
                   <p className="font-bold text-lg">Tu cesta está vacía</p>
                   <p className="text-sm">¡Añade algo delicioso!</p>
                 </div>
@@ -331,7 +331,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
           >
             <div
               className={`alert shadow-2xl text-white font-bold border-none rounded-2xl flex items-center gap-3 pr-6
-                ${toast.tipo === "error" ? "bg-error" : "bg-green-900"}`}
+                  ${toast.tipo === "error" ? "bg-error" : "bg-green-900"}`}
             >
               {toast.tipo === "error" ? (
                 <AlertCircle size={22} />
