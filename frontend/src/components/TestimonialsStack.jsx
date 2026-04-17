@@ -24,7 +24,7 @@ const testimonials = [
     role: "Comprador habitual",
     text: "Descubrí una tienda de quesos artesanales a 3 calles de mi casa que no conocía. El envío fue súper rápido y el producto espectacular.",
     rating: "⭐⭐⭐⭐⭐",
-    color: "bg-sea_green-500 text-white"
+    color: "bg-sea_green text-white"
   },
   {
     id: 4,
@@ -49,14 +49,14 @@ export const TestimonialsStack = () => {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-6 py-24 overflow-hidden">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+    <section className="w-full max-w-7xl mx-auto px-6 py-16 md:py-24 overflow-hidden">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
         
         {/* Lado Izquierdo: Título y Contexto */}
-        <div className="flex-1 text-center lg:text-left z-10">
+        <div className="flex-1 text-center lg:text-left z-10 w-full">
           <h2 className="text-4xl md:text-5xl font-black text-base-content mb-6 leading-tight">
             El corazón de <br/>
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-jungle_teal to-sea_green-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-jungle_teal to-sea_green">
               nuestro barrio.
             </span>
           </h2>
@@ -73,8 +73,8 @@ export const TestimonialsStack = () => {
         </div>
 
         {/* Lado Derecho: La Baraja de Cartas (Stack) */}
-        {/* Le damos un poco más de pl-10 (padding left) para dejar espacio a las cartas que sobresalen por la izquierda */}
-        <div className="flex-1 relative w-full h-400px md:h-350px flex justify-center items-center perspective-1000 pl-8 lg:pl-16">
+        {/* ✨ AQUÍ ESTÁ LA MAGIA: h-[400px] fuerza al contenedor a tener altura real ✨ */}
+        <div className="flex-1 relative w-full min-h-[400px] lg:min-h-[450px] flex justify-center items-center perspective-1000 pl-0 lg:pl-16 mt-8 lg:mt-0">
           <AnimatePresence mode="popLayout">
             {cards.map((testimonial, index) => {
               if (index > 2) return null;
@@ -90,42 +90,42 @@ export const TestimonialsStack = () => {
                   animate={{ 
                     opacity: 1 - index * 0.15,
                     scale: 1 - index * 0.04,
-                    x: -index * 25, // <-- Sobresale hacia la izquierda (negativo)
-                    y: index * 25,  // <-- Sobresale hacia abajo (positivo)
+                    x: -index * 15, // Ajustado para que no se salga tanto en móvil
+                    y: index * 20,  
                     zIndex: cards.length - index 
                   }}
                   
-                  // 3. ANIMACIÓN DE SALIDA (Vuela hacia la derecha y un poco hacia arriba)
+                  // 3. ANIMACIÓN DE SALIDA
                   exit={{ 
                     opacity: 0, 
                     scale: 0.9, 
-                    x: 300, // <-- Disparo a la derecha
-                    y: -50, // <-- Ligera elevación al salir
-                    rotate: 10, // <-- Le damos un toque de rotación para que parezca que la lanzas
+                    x: 300, 
+                    y: -50, 
+                    rotate: 10, 
                     transition: { duration: 0.3, ease: "easeOut" } 
                   }}
                   
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   onClick={index === 0 ? handleNext : undefined}
-                  className={`absolute w-full max-w-md p-8 rounded-3xl shadow-2xl cursor-pointer select-none border border-white/10 backdrop-blur-md ${testimonial.color}`}
+                  className={`absolute w-[90%] max-w-md p-6 md:p-8 rounded-3xl shadow-2xl cursor-pointer select-none border border-white/10 backdrop-blur-md ${testimonial.color}`}
                   style={{ transformOrigin: 'top center' }}
                 >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="text-4xl opacity-50">❝</div>
-                    <div className="text-sm font-black tracking-widest">{testimonial.rating}</div>
+                  <div className="flex justify-between items-start mb-4 md:mb-6">
+                    <div className="text-4xl opacity-50 leading-none">❝</div>
+                    <div className="text-xs md:text-sm font-black tracking-widest">{testimonial.rating}</div>
                   </div>
                   
-                  <p className="text-lg md:text-xl font-medium mb-8 leading-relaxed">
+                  <p className="text-base md:text-lg lg:text-xl font-medium mb-6 md:mb-8 leading-relaxed">
                     {testimonial.text}
                   </p>
                   
                   <div className="flex items-center gap-3 mt-auto">
-                    <div className="w-12 h-12 rounded-full bg-black/10 flex items-center justify-center font-bold text-lg">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/10 flex items-center justify-center font-bold text-base md:text-lg">
                       {testimonial.name.charAt(0)}
                     </div>
                     <div>
-                      <h4 className="font-bold">{testimonial.name}</h4>
-                      <p className="text-sm opacity-70">{testimonial.role}</p>
+                      <h4 className="font-bold text-sm md:text-base">{testimonial.name}</h4>
+                      <p className="text-xs md:text-sm opacity-70">{testimonial.role}</p>
                     </div>
                   </div>
                 </motion.div>

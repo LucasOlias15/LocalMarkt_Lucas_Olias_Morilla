@@ -10,6 +10,12 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
+import {
+  REGEX_NOMBRE,
+  REGEX_DESCRIPCION,
+  REGEX_PRECIO,
+  REGEX_STOCK
+} from "../../../common/validaciones";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 const imageDefault =
@@ -143,26 +149,50 @@ export const StorePanelPage = () => {
     setImageFile(null);
     setIsModalOpen(true);
   };
-
   // Guardar (Crear o Editar)
+
   const handleSaveProduct = async (e) => {
     e.preventDefault();
-    if (!newProduct.nombre || !newProduct.precio) {
-      return mostrarNotificacion(
-        "Por favor, rellena los campos obligatorios.",
-        "error",
-      );
+
+    const nombre = newProduct.nombre.trim();
+    const descripcion = newProduct.descripcion.trim();
+    const precio = Number(newProduct.precio);
+    const stock = Number(newProduct.stock);
+
+    if (!REGEX_NOMBRE.test(nombre)) {
+      return mostrarNotificacion("El nombre debe tener al menos 3 caracteres.", "error");
+    }
+    
+    if (!REGEX_DESCRIPCION.test(descripcion)) {
+      return mostrarNotificacion("Añade una descripción más detallada (min. 10 caracteres).", "error");
     }
 
+    if (!REGEX_PRECIO.test(precio)) {
+      return mostrarNotificacion("El precio debe ser un número mayor que 0.", "error");
+    }
+
+    // El stock no puede ser negativo ni tener decimales
+    if (!REGEX_STOCK.test(stock)) {
+      return mostrarNotificacion("El stock debe ser un número entero válido (0 o mayor).", "error");
+    }
+
+    // Si pasamos todas las validaciones, preparamos los datos
+
     const formData = new FormData();
-    formData.append("nombre", newProduct.nombre);
-    formData.append("precio", newProduct.precio);
-    formData.append("descripcion", newProduct.descripcion);
-    formData.append("stock", newProduct.stock);
+    formData.append("nombre", newProduct.nombre.trim());
+    formData.append("precio", Number(newProduct.precio));
+    formData.append("descripcion", newProduct.descripcion.trim());
+    formData.append("stock", Number(newProduct.stock));
     formData.append("id_comercio", storeId);
-    if (imageFile) formData.append("imagen", imageFile);
-    else if (!editingId)
-      return mostrarNotificacion("Selecciona una imagen.", "error");
+    
+    if (imageFile) {
+      // Si el usuario ha seleccionado una foto nueva, la enviamos
+      formData.append("imagen", imageFile);
+    } else if (!editingId) {
+      // SI NO hay foto nueva Y NO estamos editando (es producto nuevo), ERROR
+      return mostrarNotificacion("Debes subir una imagen para el nuevo producto.", "error");
+    }
+    // Si estamos editando y imageFile es null, el backend simplemente no actualizará el campo de imagen
 
     try {
       const token = localStorage.getItem("token");
@@ -641,7 +671,8 @@ export const StorePanelPage = () => {
                     type="number"
                     placeholder="Precio (€)"
                     required
-                    step="0.01"
+                    min="0.01" 
+                    step="0.01" 
                     className="input input-bordered w-full bg-base-200"
                     value={newProduct.precio}
                     onChange={(e) =>
@@ -652,6 +683,8 @@ export const StorePanelPage = () => {
                     type="number"
                     placeholder="Stock ud."
                     required
+                    min="0" 
+                    step="1" 
                     className="input input-bordered w-full bg-base-200"
                     value={newProduct.stock}
                     onChange={(e) =>
@@ -671,18 +704,19 @@ export const StorePanelPage = () => {
                     })
                   }
                 />
-                <input
-                  type="file"
-                  accept="image/*"
-                  required={!editingId}
-                  className="file-input file-input-bordered w-full bg-base-200"
-                  onChange={(e) => setImageFile(e.target.files[0])}
-                />
-                {editingId && (
+                 {editingId && (
                   <span className="text-xs opacity-50 ml-1">
                     Déjalo en blanco para mantener la imagen actual.
                   </span>
                 )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  required={!editingId}
+                  className="file-input file-input-bordered w-full bg-jungle_teal"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                />
+               
                 <div className="modal-action mt-6">
                   <button
                     type="button"
@@ -783,14 +817,16 @@ export const StorePanelPage = () => {
 
         {/* Toast Notificaciones */}
         {toast && (
-          <div className="toast toast-top toast-center z-100 mt-4">
+          <div className="toast toast-top toast-center z-9999 mt-24 animate-fade-in-down">
             <div
-              className={`alert shadow-xl font-bold rounded-2xl text-white border-none pr-6 ${toast.tipo === "error" ? "bg-error" : "bg-jungle_teal"}`}
+              className={`alert shadow-2xl font-bold rounded-2xl text-white border-none pr-6 ${
+                toast.tipo === "error" ? "bg-error" : "bg-jungle_teal"
+              }`}
             >
               {toast.tipo === "error" ? (
-                <XCircle size={20} />
+                <XCircle size={22} />
               ) : (
-                <CheckCircle2 size={20} />
+                <CheckCircle2 size={22} />
               )}
               <span>{toast.mensaje}</span>
             </div>

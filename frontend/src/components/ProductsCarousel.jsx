@@ -33,7 +33,16 @@ export const ProductsCarousel = () => {
       }
     };
 
+    // Primera carga
     fetchFeaturedProducts();
+
+    // ✨ ESCUCHAMOS COMPRAS PARA ACTUALIZAR EL CARRUSEL SIN RECARGAR ✨
+    window.addEventListener("actualizarCatalogo", fetchFeaturedProducts);
+
+    // Limpieza
+    return () => {
+      window.removeEventListener("actualizarCatalogo", fetchFeaturedProducts);
+    };
   }, []);
 
   // Función de scroll del carrusel
@@ -58,6 +67,7 @@ export const ProductsCarousel = () => {
       precio: producto.precio,
       imagen: producto.imagen,
       id_comercio: producto.id_comercio,
+      stock_maximo: producto.stock, // ✨ PASAMOS EL STOCK AL CARRITO ✨
     };
 
     addToCart(userId, productForCart);
@@ -115,11 +125,14 @@ export const ProductsCarousel = () => {
                 {/* 🔗 Enlace a la tienda (envuelve imagen e info) */}
                 <Link href={`/tienda/${product.id_comercio}`}>
                   <div className="cursor-pointer">
-                    <figure className="h-52 overflow-hidden relative">
+                    <figure className="h-52 overflow-hidden relative bg-base-300">
                       <img
                         src={product.imagen}
                         alt={product.nombre}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        // ✨ LÓGICA DE GRAYSCALE EN LA IMAGEN ✨
+                        className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
+                          product.stock <= 0 ? "grayscale opacity-60" : ""
+                        }`}
                       />
                       <div className="absolute top-3 left-3 bg-base-100/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-jungle_teal shadow-sm flex items-center gap-1.5">
                         <Store className="w-3 h-3" />
@@ -127,10 +140,18 @@ export const ProductsCarousel = () => {
                       </div>
                     </figure>
 
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-base-content mb-1 line-clamp-1 group-hover:text-jungle_teal transition-colors">
-                        {product.nombre}
-                      </h3>
+                    <div className="p-5 pb-2">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <h3 className="text-lg font-bold text-base-content line-clamp-1 group-hover:text-jungle_teal transition-colors">
+                          {product.nombre}
+                        </h3>
+                        {/* ✨ ETIQUETA VISUAL DE AGOTADO ✨ */}
+                        {product.stock <= 0 && (
+                          <span className="text-[10px] font-bold text-error uppercase mt-1">
+                            Agotado
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-base-content/50 line-clamp-2">
                         {product.descripcion}
                       </p>
@@ -146,7 +167,10 @@ export const ProductsCarousel = () => {
                     </span>
                     <button
                       onClick={() => handleAdd(product)}
-                      className="btn btn-circle bg-base-300 hover:bg-jungle_teal text-base-content hover:text-white border-none transition-all duration-300 shadow-sm hover:scale-110 active:scale-95"
+                      disabled={product.stock <= 0}
+                      className="btn btn-circle bg-base-300 text-base-content border-none transition-all duration-300 shadow-sm 
+                                 hover:bg-jungle_teal hover:text-white hover:scale-110 active:scale-95
+                                 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-base-300 disabled:hover:text-base-content disabled:hover:scale-100"
                     >
                       <ShoppingBasket className="w-5 h-5" />
                     </button>

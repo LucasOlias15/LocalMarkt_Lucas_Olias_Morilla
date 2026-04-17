@@ -14,13 +14,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import {
-  nombreUsuarioRegEx,
-  emailRegEx,
-  claveRegEx,
-  telefonoRegEx,
-  nombreComercioRegEx,
-  direccionRegEx,
-  descripcionRegEx,
+  REGEX_NOMBRE_USUARIO,
+  REGEX_EMAIL,
+  REGEX_CONTRASENYA,
+  REGEX_TELEFONO,
+  REGEX_NOMBRE_TIENDA,
+  REGEX_DIRECCION,
+  REGEX_DESCRIPCION_TIENDA
+
 } from "../../../common/validaciones.js";
 import { useState } from "react";
 import { LocationPicker } from "../components/LocationPicker";
@@ -54,33 +55,32 @@ export const RegisterPage = () => {
     e.preventDefault();
 
     // Verificamos los campos comunes
-    if (!nombreUsuarioRegEx.test(nombreUsuario)) {
+    if (!REGEX_NOMBRE_USUARIO.test(nombreUsuario)) {
       setError("El nombre debe tener entre 3 y 80 caracteres (solo letras).");
       return;
-    } else if (!emailRegEx.test(email)) {
+    } else if (!REGEX_EMAIL.test(email)) {
       setError("Introduce un correo electrónico válido (ejemplo@correo.com).");
       return;
-    } else if (!claveRegEx.test(password)) {
+    } else if (!REGEX_CONTRASENYA.test(password)) {
       setError("La clave debe tener 8+ caracteres, una mayúscula, una minúscula y un número.");
       return;
     }
 
     // Verificamos los campos específicos de los dueños
     if (tipoCuenta === "dueño") {
-      if (!telefonoRegEx.test(contacto)) {
+      if (!REGEX_TELEFONO.test(contacto)) {
         setError("Introduce un número de teléfono válido (9 dígitos).");
         return;
-      } else if (!nombreComercioRegEx.test(nombreComercio)) {
+      } else if (!REGEX_NOMBRE_TIENDA.test(nombreComercio)) {
         setError("Nombre de tienda inválido (mínimo 2 caracteres, evita símbolos raros).");
         return;
-      } else if (!direccionRegEx.test(direccion)) {
+      } else if (!REGEX_DIRECCION.test(direccion)) {
         setError("La dirección debe ser más específica (mínimo 5 caracteres).");
         return;
-      } else if (!descripcionRegEx.test(descripcion)) {
+      } else if (!REGEX_DESCRIPCION_TIENDA.test(descripcion)) {
         setError("La descripción debe tener entre 10 y 500 caracteres.");
         return;
       } else if (!coordenadasTienda) {
-        // 🛑 Validación nueva: Obligamos a usar el mapa
         setError("Por favor, usa el mapa para ubicar exactamente tu comercio.");
         return;
       }

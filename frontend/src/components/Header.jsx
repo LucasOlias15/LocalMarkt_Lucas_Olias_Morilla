@@ -50,7 +50,7 @@ export const Header = ({ toggleMenu }) => {
     }, [isDark]);
 
     const toggleTheme = (e) => {
-        setIsDark(e.target.checked);
+        setIsDark(e.target.checked ?? !isDark);
     };
 
     useEffect(() => {
@@ -161,8 +161,8 @@ export const Header = ({ toggleMenu }) => {
                 {/* Derecha: Botones Alineados */}
                 <div className="navbar-end flex items-center justify-end gap-3 sm:gap-4 pr-2">
 
-                    {/* 1. BOTÓN TEMA */}
-                    <label className="swap swap-rotate btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal hover:border-jungle_teal transition-all shadow-md">
+                    {/* 1. BOTÓN TEMA (Oculto en móvil) */}
+                    <label className="hidden md:inline-grid swap swap-rotate btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal hover:border-jungle_teal transition-all shadow-md">
                         <input type="checkbox" onChange={toggleTheme} checked={isDark} className="hidden" />
                         <svg className="swap-off w-5 h-5 md:w-6 md:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
@@ -172,8 +172,8 @@ export const Header = ({ toggleMenu }) => {
                         </svg>
                     </label>
 
-                    {/* 2. BOTÓN IDIOMA */}
-                    <div className="dropdown dropdown-end">
+                    {/* 2. BOTÓN IDIOMA (Oculto en móvil) */}
+                    <div className="hidden md:dropdown dropdown-end">
                         <label tabIndex={0} className="btn btn-circle btn-sm md:btn-md bg-jungle_teal border-2 border-jungle_teal text-base-100 hover:bg-transparent hover:text-jungle_teal transition-all shadow-md flex items-center justify-center cursor-pointer">
                             <svg className="w-5 h-5 md:w-6 md:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" />
@@ -236,6 +236,28 @@ export const Header = ({ toggleMenu }) => {
                                     <li><Link href="/registro">Crear Cuenta</Link></li>
                                 </>
                             )}
+
+                            {/* ✨ OPCIONES EXTRA SOLO PARA MÓVIL ✨ */}
+                            <div className="divider md:hidden my-1"></div>
+                            
+                            <li className="md:hidden">
+                                <a onClick={toggleTheme} className="flex flex-col items-start gap-0 leading-tight cursor-pointer">
+                                    <span>Tema</span>
+                                    <span className="text-xs opacity-50 font-normal">{isDark ? 'Oscuro' : 'Claro'}</span>
+                                </a>
+                            </li>
+
+                            <li className="md:hidden">
+                                <details>
+                                    <summary>Idioma</summary>
+                                    <ul className="p-2 z-110 bg-base-100 shadow-sm border border-base-200">
+                                        <li><a className="text-sm">Español</a></li>
+                                        <li><a className="text-sm opacity-50 font-normal">English</a></li>
+                                        <li><a className="text-sm opacity-50 font-normal">Italiano</a></li>
+                                    </ul>
+                                </details>
+                            </li>
+
                         </ul>
                     </div>
                 </div>
