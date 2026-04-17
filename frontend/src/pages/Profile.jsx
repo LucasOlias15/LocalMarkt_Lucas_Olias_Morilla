@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 
+//TODO Poder editar ubicación y Nombre de la tienda entre otros datos con alguna restriccion (¿Numero de intentos?). 
+
 export const Profile = () => {
   const [user, setUser] = useState(null);
   const [, setLocation] = useLocation();
@@ -201,7 +203,7 @@ export const Profile = () => {
               {/* BLOQUE DUEÑO 2 */}
               <div className="md:col-span-1 bg-green-900 text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-sea_green transition-colors cursor-pointer flex flex-col justify-center">
                 <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">Ventas del mes</h2>
-                <div className="text-6xl font-black mb-1">24</div>
+                <div className="text-3xl font-black mb-3.5">(En proceso)</div>
                 <p className="text-white/70 text-sm font-medium">Pedidos completados</p>
               </div>
               {/* BLOQUE FAVORITOS DEL DUEÑO 3 */}

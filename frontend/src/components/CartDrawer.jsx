@@ -84,6 +84,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
         );
 
         // Retrasamos el cierre del cajón un segundito para que el usuario vea el mensaje de éxito
+        window.dispatchEvent(new CustomEvent('actualizarCatalogo'));
         setTimeout(() => {
           onClose();
         }, 1500);
@@ -231,6 +232,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
                                 item.quantity + 1,
                               )
                             }
+                            disabled={item.quantity >= item.stock_maximo}
                             className="cursor-pointer w-8 h-8 rounded-xl bg-base-300 hover:bg-jungle_teal hover:text-white transition-colors flex items-center justify-center font-bold"
                           >
                             +
