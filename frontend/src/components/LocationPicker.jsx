@@ -4,7 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Search, MapPin, Info } from "lucide-react";
 
-// 🎨 ICONO PERSONALIZADO (Mismo estilo que tu MapPage pero en Jungle Teal puro)
+// ICONO PERSONALIZADO (Mismo estilo que tu MapPage pero en Jungle Teal puro)
 const pickerIcon = L.divIcon({
   html: `
     <div class="relative flex items-center justify-center w-12 h-12 hover:scale-110 transition-transform -mt-6 -ml-6">
@@ -17,7 +17,7 @@ const pickerIcon = L.divIcon({
   iconAnchor: [24, 24],
 });
 
-// 🚁 COMPONENTE INVISIBLE PARA MOVER LA CÁMARA
+// COMPONENTE INVISIBLE PARA MOVER LA CÁMARA
 const MapUpdater = ({ coords }) => {
   const map = useMap();
   useEffect(() => {
@@ -32,7 +32,7 @@ const MapUpdater = ({ coords }) => {
 // COMPONENTE PRINCIPAL
 // Recibe una prop clave: onLocationSelect (función para avisar al padre)
 // ==========================================
-export const LocationPicker = ({ onLocationSelect, initialCoords = null }) => {
+export const LocationPicker = ({ onLocationSelect, onError, initialCoords = null }) => {
   // ESTADOS
   const [actualCoords, setActualCoords] = useState(initialCoords);
   const [ubicacionIntroducida, setUbicacionIntroducida] = useState("");
@@ -64,8 +64,9 @@ export const LocationPicker = ({ onLocationSelect, initialCoords = null }) => {
         // ¡AVISAMOS AL PADRE DE LAS NUEVAS COORDENADAS!
         if (onLocationSelect) onLocationSelect(nuevaUbicacion);
       } else {
-        // TODO Toast? para avisar de que no se han podido encontrar la diercción
-        alert("No hemos podido encontrar esa dirección. Prueba a añadir la ciudad.");
+        if (onError) {
+          onError("No hemos podido encontrar esa dirección. Prueba a añadir la ciudad.");
+        }
       }
     } catch (error) {
       console.error("Error buscando la dirección:", error);

@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRoute } from "wouter";
 import { ProductCard } from "../components/ProductCard";
-import { Heart } from "lucide-react";
-
-//TODO Añadir funcionalidad de añadir tienda a favorito , con icono pertinente para añadir la tienda a favoritos
+import { Heart, ShieldBan } from "lucide-react";
 
 export const ShopDetail = () => {
   const [, params] = useRoute("/tienda/:id");
@@ -87,7 +85,7 @@ export const ShopDetail = () => {
           price: p.precio,
           description: p.descripcion,
           img: p.imagen,
-          id_comercio: Number(params.id), // 👇 ESTA ES LA LÍNEA SALVAVIDAS 👇
+          id_comercio: Number(params.id), 
         }));
 
         setProducts(productosFormateados);
@@ -306,7 +304,7 @@ export const ShopDetail = () => {
           </div>
         ) : products.length === 0 ? (
           <div className="w-full py-20 text-center opacity-50 font-bold text-xl">
-            Este comercio aún no ha subido productos 😔
+            Este comercio aún no ha subido productos <ShieldBan/>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">

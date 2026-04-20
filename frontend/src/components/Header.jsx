@@ -217,7 +217,6 @@ export const Header = ({ toggleMenu }) => {
                             {user?.nombre ? (
                                 <>
                                     <li className="menu-title px-4 py-2 text-xs opacity-50 uppercase">Hola, {user.nombre}</li>
-                                    {/*TODO Toggle entre comercio que ya tiene productos y foto de perfil y comercio al que le falta información */}
                                     {user.rol === 'dueño' && (
                                         <li>
                                             <Link href={`/panel-tienda/${user.id_comercio}`} className="text-jungle_teal bg-jungle_teal/10 hover:bg-jungle_teal hover:text-white transition-colors">

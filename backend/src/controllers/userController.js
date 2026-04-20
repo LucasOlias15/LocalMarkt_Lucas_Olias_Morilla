@@ -1,7 +1,7 @@
 import { getUserByEmail, createUser, getUserById , updateUserInfo} from "../models/userModel.js";
 import { createComercio } from "../models/comercioModel.js";
 import { getComercioByUsuarioId } from "../models/comercioModel.js";
-import { nombreUsuarioRegEx,emailRegEx,claveRegEx,telefonoRegEx,nombreComercioRegEx,direccionRegEx,descripcionRegEx } from "../../../common/validaciones.js";
+import { REGEX_NOMBRE_USUARIO,REGEX_EMAIL,REGEX_CONTRASENYA,REGEX_TELEFONO,REGEX_NOMBRE_TIENDA,REGEX_DIRECCION,REGEX_DESCRIPCION } from "../../../common/validaciones.js";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
@@ -20,23 +20,23 @@ export const registrarUsuario = async (req, res) => {
         const { nombreUsuario, email, clave, rol, nombreComercio, descripcion, categoria, contacto, direccion, latitud, longitud } = req.body;
        
         // Verificamos los campos comunes a dueños y clientes que vienen en el body
-        if (!nombreUsuarioRegEx.test(nombreUsuario)){
+        if (!REGEX_NOMBRE_USUARIO.test(nombreUsuario)){
             return res.status(400).json({ error: "Formato de nombre de usuario inválido. " });
-        } else if (!emailRegEx.test(email)){
+        } else if (!REGEX_EMAIL.test(email)){
             return res.status(400).json({ error: "Formato de email inválido. " });      
-        } else if (!claveRegEx.test(clave)){
+        } else if (!REGEX_CONTRASENYA.test(clave)){
             return res.status(400).json({ error: "Formato de contraseña inválido. " });      
         }
        
         // Verificamos los campos específicos de los dueños
         if (rol === "dueño") {
-            if (!telefonoRegEx.test(contacto)){
+            if (!REGEX_TELEFONO.test(contacto)){
                 return res.status(400).json({ error: "Formato de número de teléfono inválido. " });      
-            } else if (!nombreComercioRegEx.test(nombreComercio)){
+            } else if (!REGEX_NOMBRE_TIENDA.test(nombreComercio)){
                 return res.status(400).json({ error: "Formato de nombre de comercio inválido. " });      
-            } else if (!direccionRegEx.test(direccion)){
+            } else if (!REGEX_DIRECCION.test(direccion)){
                 return res.status(400).json({ error: "Formato de direccion inválido. " });      
-            } else if (!descripcionRegEx.test(descripcion)){
+            } else if (!REGEX_DESCRIPCION.test(descripcion)){
                 return res.status(400).json({ error: "Formato de descripcion inválido. " });      
             }
         }

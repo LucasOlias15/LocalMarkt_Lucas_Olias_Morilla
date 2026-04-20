@@ -56,7 +56,7 @@ export const TestimonialsStack = () => {
         <div className="flex-1 text-center lg:text-left z-10 w-full">
           <h2 className="text-4xl md:text-5xl font-black text-base-content mb-6 leading-tight">
             El corazón de <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-jungle_teal to-sea_green">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-jungle_teal to-sea_green">
               nuestro barrio.
             </span>
           </h2>
@@ -74,7 +74,7 @@ export const TestimonialsStack = () => {
 
         {/* Lado Derecho: La Baraja de Cartas (Stack) */}
         {/* ✨ AQUÍ ESTÁ LA MAGIA: h-[400px] fuerza al contenedor a tener altura real ✨ */}
-        <div className="flex-1 relative w-full min-h-[400px] lg:min-h-[450px] flex justify-center items-center perspective-1000 pl-0 lg:pl-16 mt-8 lg:mt-0">
+        <div className="flex-1 relative w-full min-h-100 lg:min-h-112.5 flex justify-center items-center perspective-1000 pl-0 lg:pl-16 mt-8 lg:mt-0">
           <AnimatePresence mode="popLayout">
             {cards.map((testimonial, index) => {
               if (index > 2) return null;

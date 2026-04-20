@@ -12,6 +12,7 @@ import {
   User,
   Users,
   TrendingUp,
+  MapPinX,
 } from "lucide-react";
 import {
   REGEX_NOMBRE_USUARIO,
@@ -20,8 +21,7 @@ import {
   REGEX_TELEFONO,
   REGEX_NOMBRE_TIENDA,
   REGEX_DIRECCION,
-  REGEX_DESCRIPCION_TIENDA
-
+  REGEX_DESCRIPCION_TIENDA,
 } from "../../../common/validaciones.js";
 import { useState } from "react";
 import { LocationPicker } from "../components/LocationPicker";
@@ -41,14 +41,24 @@ export const RegisterPage = () => {
   const [categoria, setCategoria] = useState("");
   const [contacto, setContacto] = useState("");
   const [direccion, setDireccion] = useState("");
-  const [imagen, setImagen] = useState(null); 
-  
+  const [imagen, setImagen] = useState(null);
+
   // 📍 Estado que guarda las coordenadas que nos pasa el LocationPicker
   const [coordenadasTienda, setCoordenadasTienda] = useState(null);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [, setLocation] = useLocation();
+
+  const [toast, setToast] = useState(null);
+
+  const mostrarNotificacion = (mensaje, tipo = "error") => {
+    setToast({ mensaje, tipo });
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
 
   // 2. FUNCIÓN DE REGISTRO
   const handleSubmit = async (e) => {
@@ -62,7 +72,9 @@ export const RegisterPage = () => {
       setError("Introduce un correo electrónico válido (ejemplo@correo.com).");
       return;
     } else if (!REGEX_CONTRASENYA.test(password)) {
-      setError("La clave debe tener 8+ caracteres, una mayúscula, una minúscula y un número.");
+      setError(
+        "La clave debe tener 8+ caracteres, una mayúscula, una minúscula y un número.",
+      );
       return;
     }
 
@@ -72,7 +84,9 @@ export const RegisterPage = () => {
         setError("Introduce un número de teléfono válido (9 dígitos).");
         return;
       } else if (!REGEX_NOMBRE_TIENDA.test(nombreComercio)) {
-        setError("Nombre de tienda inválido (mínimo 2 caracteres, evita símbolos raros).");
+        setError(
+          "Nombre de tienda inválido (mínimo 2 caracteres, evita símbolos raros).",
+        );
         return;
       } else if (!REGEX_DIRECCION.test(direccion)) {
         setError("La dirección debe ser más específica (mínimo 5 caracteres).");
@@ -98,14 +112,14 @@ export const RegisterPage = () => {
 
     // Solo añadimos los datos del comercio si es dueño
     if (tipoCuenta === "dueño") {
-        paqueteDeDatos.append("nombreComercio", nombreComercio);
-        paqueteDeDatos.append("descripcion", descripcion);
-        paqueteDeDatos.append("categoria", categoria);
-        paqueteDeDatos.append("contacto", contacto);
-        paqueteDeDatos.append("direccion", direccion);
-        // 🗺️ Añadimos las coordenadas reales sacadas del mapa
-        paqueteDeDatos.append("latitud", coordenadasTienda.lat);
-        paqueteDeDatos.append("longitud", coordenadasTienda.lng);
+      paqueteDeDatos.append("nombreComercio", nombreComercio);
+      paqueteDeDatos.append("descripcion", descripcion);
+      paqueteDeDatos.append("categoria", categoria);
+      paqueteDeDatos.append("contacto", contacto);
+      paqueteDeDatos.append("direccion", direccion);
+      // 🗺️ Añadimos las coordenadas reales sacadas del mapa
+      paqueteDeDatos.append("latitud", coordenadasTienda.lat);
+      paqueteDeDatos.append("longitud", coordenadasTienda.lng);
     }
 
     if (imagen) {
@@ -245,7 +259,6 @@ export const RegisterPage = () => {
 
           {/* FORMULARIO */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            
             {/* Campo común: Nombre Usuario */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-1">
@@ -312,13 +325,17 @@ export const RegisterPage = () => {
                         className="w-full pl-12 pr-4 py-4 rounded-xl bg-base-200/50 border-2 border-transparent text-base text-base-content outline-none focus:bg-base-100 focus:border-jungle_teal transition-all appearance-none cursor-pointer"
                         required={tipoCuenta === "dueño"}
                       >
-                        <option value="" disabled>Seleccionar...</option>
+                        <option value="" disabled>
+                          Seleccionar...
+                        </option>
                         <option value="Frutería">Frutería</option>
                         <option value="Panadería">Panadería</option>
                         <option value="Carnicería">Carnicería</option>
                         <option value="Pastelería">Pastelería</option>
                         <option value="Bio">Productos Bio/Eco</option>
-                        <option value="Artesanía y regalos">Artesanía y Regalos</option>
+                        <option value="Artesanía y regalos">
+                          Artesanía y Regalos
+                        </option>
                         <option value="Textiles y moda">Textiles y Moda</option>
                       </select>
                     </div>
@@ -386,8 +403,9 @@ export const RegisterPage = () => {
 
                 {/* 🗺️ INTEGRACIÓN DEL COMPONENTE DEL MAPA */}
                 <div className="mt-2">
-                  <LocationPicker 
-                    onLocationSelect={(coords) => setCoordenadasTienda(coords)} 
+                  <LocationPicker
+                    onLocationSelect={(coords) => setCoordenadasTienda(coords)}
+                    onError={(mensaje) => mostrarNotificacion(mensaje, "error")}
                   />
                 </div>
 
@@ -493,6 +511,17 @@ export const RegisterPage = () => {
           </div>
         </div>
       </motion.div>
+      {toast && (
+        <div className="fixed top-22 left-1/2 -translate-x-1/2 z-9999 animate-fade-in-down">
+          <div
+            className={`alert shadow-2xl font-bold rounded-2xl text-red-500 border-none pr-6 flex items-center gap-2 ${
+              toast.tipo === "error" ? " bg-red-100" : "bg-jungle_teal"
+            }`}
+          >
+            <MapPinX/><span>{toast.mensaje}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
