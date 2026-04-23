@@ -316,7 +316,6 @@ export const ShopDetail = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                {/* 👇 ESTA ES LA LÍNEA MÁGICA 👇 */}
                 <ProductCard
                   product={product}
                   isFavorito={favProductos.includes(product.id)}

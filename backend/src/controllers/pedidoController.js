@@ -31,6 +31,7 @@ export const getMisPedidos = async (req, res) => {
             // Si no existe, la creamos y la metemos en el pedido
             if (!tiendaActual) {
                 tiendaActual = {
+                    id_comercio: filaActual.id_comercio,
                     nombre: filaActual.nombre_comercio,
                     categoria: filaActual.categoria_comercio,
                     productos: []

@@ -8,19 +8,15 @@ import {
   ArrowRight,
   Settings,
   Lock,
-  MapPin,
-  Phone,
-  Tag,
-  FileText,
   Tags,
+  NotebookPen,
+  Star,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { LocationPicker } from "../components/LocationPicker";
-import useToastStore from '../store/useToastStore';
-
-// TODO coordenadas y mapa sincronizados , abrir favoritos antes de datos del comercio
+import useToastStore from "../store/useToastStore";
 
 export const Profile = () => {
   const [user, setUser] = useState(null);
@@ -28,17 +24,34 @@ export const Profile = () => {
 
   const toast = useToastStore();
 
-  // --- ESTADOS DE LOS DESPLEGABLES ---
+  // ========================================================================
+  // 1. ESTADOS DE LOS DESPLEGABLES
+  // ========================================================================
   const [showSettings, setShowSettings] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [showShopForm, setShowShopForm] = useState(false); // nuevo para editar comercio
+  const [showShopForm, setShowShopForm] = useState(false);
+  const [showValoraciones, setShowValoraciones] = useState(false);
 
-  // --- ESTADOS PARA FAVORITOS ---
+  // ========================================================================
+  // 2. ESTADOS PARA FAVORITOS
+  // ========================================================================
   const [favShops, setFavShops] = useState([]);
   const [favProducts, setFavProducts] = useState([]);
   const [loadingFavs, setLoadingFavs] = useState(false);
 
-  // --- ESTADOS PARA COMERCIO (dueño) ---
+  // ========================================================================
+  // 3. ESTADOS PARA VALORACIONES
+  // ========================================================================
+  const [valoraciones, setValoraciones] = useState([]);
+  const [loadingValoraciones, setLoadingValoraciones] = useState(false);
+  const [promedioValoraciones, setPromedioValoraciones] = useState({
+    promedio: "0.0",
+    total: 0,
+  });
+
+  // ========================================================================
+  // 4. ESTADOS PARA COMERCIO (dueño)
+  // ========================================================================
   const [comercio, setComercio] = useState(null);
   const [loadingComercio, setLoadingComercio] = useState(false);
   const [shopFormData, setShopFormData] = useState({
@@ -54,13 +67,19 @@ export const Profile = () => {
   const [imagenPreview, setImagenPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  // --- ESTADOS PARA AJUSTES DE CUENTA ---
+  // ========================================================================
+  // 5. ESTADOS PARA AJUSTES DE CUENTA
+  // ========================================================================
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
     claveActual: "",
     nuevaClave: "",
   });
+
+  // ========================================================================
+  // 6. EFECTOS (carga inicial de datos)
+  // ========================================================================
 
   // Efecto para cargar usuario del localStorage
   useEffect(() => {
@@ -121,7 +140,7 @@ export const Profile = () => {
               id_comercio: data.id_comercio,
             };
             localStorage.setItem("user", JSON.stringify(updatedUser));
-            setUser(updatedUser); // Actualiza el estado local para que el enlace use el id correcto
+            setUser(updatedUser);
           }
         } else if (res.status === 404) {
           setComercio(null);
@@ -189,7 +208,58 @@ export const Profile = () => {
     fetchFavoritesData();
   }, [showFavorites, user]);
 
-  // Handlers para ajustes de cuenta
+  // ========================================================================
+  // 7. FUNCIONES PARA CARGAR VALORACIONES
+  // ========================================================================
+
+  const fetchValoracionesDueño = async () => {
+    if (!comercio) return;
+
+    setLoadingValoraciones(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `http://localhost:3000/api/valoraciones/comercio/${comercio.id_comercio}/todas`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setValoraciones(data.valoraciones || []);
+        setPromedioValoraciones({
+          promedio: data.promedio,
+          total: data.total,
+        });
+      }
+    } catch (error) {
+      console.error("Error cargando valoraciones:", error);
+    } finally {
+      setLoadingValoraciones(false);
+    }
+  };
+
+  const fetchValoracionesCliente = async () => {
+    if (!user) return;
+
+    setLoadingValoraciones(true);
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/valoraciones/mis-valoraciones/${user.id || user.id_usuario}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setValoraciones(data || []);
+      }
+    } catch (error) {
+      console.error("Error cargando mis valoraciones:", error);
+    } finally {
+      setLoadingValoraciones(false);
+    }
+  };
+
+  // ========================================================================
+  // 8. HANDLERS PARA AJUSTES DE CUENTA
+  // ========================================================================
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -197,18 +267,12 @@ export const Profile = () => {
     });
   };
 
-const handleLocationSelect = (coords) => {
-  setShopFormData(prev => ({
-    ...prev,
-    latitud: coords.lat.toString(),
-    longitud: coords.lng.toString()
-  }));
-};
-
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.claveActual) {
-      toast.warning("Debes introducir tu contraseña actual para guardar los cambios.")
+      toast.warning(
+        "Debes introducir tu contraseña actual para guardar los cambios.",
+      );
       return;
     }
     const updatedData = {
@@ -234,15 +298,26 @@ const handleLocationSelect = (coords) => {
         setFormData((prev) => ({ ...prev, claveActual: "", nuevaClave: "" }));
         setShowSettings(false);
       } else {
-        toast.error(data.error || "No se pudo actualizar el perfil")
+        toast.error(data.error || "No se pudo actualizar el perfil");
       }
     } catch (error) {
       console.error("Error de red:", error);
-      toast.info("No se pudo conectar con el servidor");
+      toast.error("No se pudo conectar con el servidor");
     }
   };
 
-  // Handlers para formulario de comercio
+  // ========================================================================
+  // 9. HANDLERS PARA FORMULARIO DE COMERCIO
+  // ========================================================================
+
+  const handleLocationSelect = (coords) => {
+    setShopFormData((prev) => ({
+      ...prev,
+      latitud: coords.lat.toString(),
+      longitud: coords.lng.toString(),
+    }));
+  };
+
   const handleShopInputChange = (e) => {
     setShopFormData({
       ...shopFormData,
@@ -302,7 +377,7 @@ const handleLocationSelect = (coords) => {
         setImagenPreview(imgData.imagenUrl);
       }
 
-      toast.info("¡Comercio actualizado con éxito!");
+      toast.success("¡Comercio actualizado con éxito!");
       // Actualizar el objeto comercio local
       setComercio({
         ...comercio,
@@ -313,9 +388,13 @@ const handleLocationSelect = (coords) => {
       setShowShopForm(false);
     } catch (error) {
       console.error(error);
-      toast.error(error);
+      toast.error(error.message || "Error al actualizar el comercio");
     }
   };
+
+  // ========================================================================
+  // 10. HANDLER DE LOGOUT
+  // ========================================================================
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -325,10 +404,13 @@ const handleLocationSelect = (coords) => {
 
   if (!user) return null;
 
+  // ========================================================================
+  // 11. RENDERIZADO VISUAL
+  // ========================================================================
   return (
     <div className="min-h-screen bg-base-100 py-12 px-4 md:px-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* CABECERA DEL PERFIL */}
+        {/* ===== CABECERA DEL PERFIL ===== */}
         <section className="bg-base-200 rounded-[3rem] p-8 md:p-12 shadow-sm border border-base-300 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-sea_green/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -393,8 +475,11 @@ const handleLocationSelect = (coords) => {
           </button>
         </section>
 
-        {/* BENTO GRID */}
+        {/* ===== BENTO GRID ===== */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* ------------------------------------------------------------------
+              VISTA PARA DUEÑO
+              ------------------------------------------------------------------ */}
           {user.rol === "dueño" ? (
             <>
               {/* BLOQUE DUEÑO 1: Panel de Tienda */}
@@ -421,22 +506,49 @@ const handleLocationSelect = (coords) => {
                 </div>
               </div>
 
-              {/* BLOQUE DUEÑO 2: Ventas (placeholder) */}
-              <div className="md:col-span-1 bg-green-900 text-white rounded-[2.5rem] p-8 shadow-sm hover:bg-sea_green transition-colors cursor-pointer flex flex-col justify-center">
-                <h2 className="font-black opacity-80 uppercase tracking-wider text-sm mb-2">
-                  Ventas del mes
-                </h2>
-                <div className="text-3xl font-black mb-3.5">(En proceso)</div>
-                <p className="text-white/70 text-sm font-medium">
-                  Pedidos completados
-                </p>
+              {/* BLOQUE DUEÑO 2: Valoraciones Recibidas */}
+              <div
+                onClick={() => {
+                  setShowValoraciones(!showValoraciones);
+                  if (!showValoraciones) {
+                    fetchValoracionesDueño();
+                    setShowFavorites(false);
+                    setShowSettings(false);
+                  }
+                }}
+                className={`md:col-span-1 rounded-[2.5rem] p-8 shadow-sm transition-all duration-300 cursor-pointer flex flex-col justify-center relative overflow-hidden ${
+                  showValoraciones
+                    ? "bg-amber-500 text-white shadow-xl shadow-amber-500/20 scale-[0.97]"
+                    : "bg-amber-600 text-white hover:bg-amber-500 hover:-translate-y-1"
+                }`}
+              >
+                <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="relative z-10">
+                  <span className="text-4xl mb-3 block">
+                    <Star className="w-12 h-12 mb-3" />
+                  </span>
+                  <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
+                    Valoraciones
+                  </h2>
+                  <p className="text-white/80 text-sm font-medium">
+                    {promedioValoraciones.total} recibidas
+                  </p>
+                  {promedioValoraciones.total >= 5 && (
+                    <p className="text-2xl font-black mt-2">
+                      {promedioValoraciones.promedio} ★
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* BLOQUE DUEÑO 3: Favoritos (igual que cliente) */}
+              {/* BLOQUE DUEÑO 3: Favoritos */}
               <div
                 onClick={() => {
                   setShowFavorites(!showFavorites);
-                  if (!showFavorites) setShowSettings(false);
+                  if (!showFavorites) {
+                    setShowValoraciones(false);
+                    setShowSettings(false);
+                  }
                 }}
                 className={`md:col-span-1 rounded-[2.5rem] p-8 shadow-sm transition-all duration-300 cursor-pointer flex flex-col justify-center relative overflow-hidden ${
                   showFavorites
@@ -447,7 +559,11 @@ const handleLocationSelect = (coords) => {
                 <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <div className="relative z-10">
                   <Heart
-                    className={`w-12 h-12 mb-3 transition-all duration-500 ${showFavorites ? "fill-white drop-shadow-md scale-110" : "fill-white/20"}`}
+                    className={`w-12 h-12 mb-3 transition-all duration-500 ${
+                      showFavorites
+                        ? "fill-white drop-shadow-md scale-110"
+                        : "fill-white/20"
+                    }`}
                   />
                   <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
                     Tus Favoritos
@@ -458,140 +574,231 @@ const handleLocationSelect = (coords) => {
                 </div>
               </div>
 
- <AnimatePresence>
-            {showFavorites && (
-              <motion.div
-                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                animate={{ opacity: 1, height: "auto", scale: 1 }}
-                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
-                className="md:col-span-3 overflow-hidden origin-top"
-              >
-                <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
-                  {loadingFavs ? (
-                    <div className="flex justify-center py-12">
-                      <span className="loading loading-spinner loading-lg text-red-500"></span>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {/* Tiendas favoritas */}
-                      <div>
-                        <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
-                          <Store className="w-6 h-6 text-red-500" /> Tiendas
-                          Favoritas
-                          <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">
-                            {favShops.length}
-                          </span>
-                        </h3>
-                        {favShops.length === 0 ? (
-                          <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
-                            No has guardado ninguna tienda aún.
-                          </p>
-                        ) : (
-                          <div className="space-y-3">
-                            {favShops.map((shop) => (
-                              <Link
-                                key={shop.id_comercio}
-                                href={`/tienda/${shop.id_comercio}`}
-                              >
-                                <div className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer group">
-                                  <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
-                                    <img
-                                      src={shop.imagen}
-                                      alt={shop.nombre}
-                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="font-bold text-base-content">
-                                      {shop.nombre}
-                                    </h4>
-                                    <p className="text-xs text-base-content/50">
-                                      {shop.categoria}
-                                    </p>
-                                  </div>
-                                  <ExternalLink className="w-5 h-5 text-base-content/20 group-hover:text-red-500 transition-colors mr-3" />
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Productos favoritos */}
-                      <div>
-                        <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
-                          <ShoppingBasket className="w-6 h-6 text-red-500" />{" "}
-                          Productos Favoritos
-                          <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">
-                            {favProducts.length}
-                          </span>
-                        </h3>
-                        {favProducts.length === 0 ? (
-                          <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
-                            No has guardado ningún producto aún.
-                          </p>
-                        ) : (
-                          <div className="space-y-3">
-                            {favProducts.map((prod) => (
-                              <div
-                                key={prod.id_producto}
-                                className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all group"
-                              >
-                                <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
-                                  <img
-                                    src={prod.imagen}
-                                    alt={prod.nombre}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                  />
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="font-bold text-base-content leading-tight mb-1">
-                                    {prod.nombre}
-                                  </h4>
-                                  <p className="text-sm font-black text-jungle_teal">
-                                    {prod.precio}€
-                                  </p>
-                                </div>
-                                <Link href={`/tienda/${prod.id_comercio}`}>
-                                  <button className="btn btn-sm btn-circle btn-ghost text-base-content/40 hover:text-red-500 hover:bg-red-50 transition-colors mr-1">
-                                    <ExternalLink className="w-4 h-4" />
-                                  </button>
-                                </Link>
+              {/* DESPLEGABLE DE FAVORITOS (DUEÑO) */}
+              <AnimatePresence>
+                {showFavorites && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                    className="md:col-span-3 overflow-hidden origin-top relative z-30"
+                  >
+                    <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
+                      {loadingFavs ? (
+                        <div className="flex justify-center py-12">
+                          <span className="loading loading-spinner loading-lg text-red-500"></span>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {/* Tiendas favoritas */}
+                          <div>
+                            <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
+                              <Store className="w-6 h-6 text-red-500" /> Tiendas
+                              Favoritas
+                              <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">
+                                {favShops.length}
+                              </span>
+                            </h3>
+                            {favShops.length === 0 ? (
+                              <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
+                                No has guardado ninguna tienda aún.
+                              </p>
+                            ) : (
+                              <div className="space-y-3">
+                                {favShops.map((shop) => (
+                                  <Link
+                                    key={shop.id_comercio}
+                                    href={`/tienda/${shop.id_comercio}`}
+                                  >
+                                    <div className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer group">
+                                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                        <img
+                                          src={shop.imagen}
+                                          alt={shop.nombre}
+                                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                      </div>
+                                      <div className="flex-1">
+                                        <h4 className="font-bold text-base-content">
+                                          {shop.nombre}
+                                        </h4>
+                                        <p className="text-xs text-base-content/50">
+                                          {shop.categoria}
+                                        </p>
+                                      </div>
+                                      <ExternalLink className="w-5 h-5 text-base-content/20 group-hover:text-red-500 transition-colors mr-3" />
+                                    </div>
+                                  </Link>
+                                ))}
                               </div>
-                            ))}
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
-              {/* BLOQUE DUEÑO 4: Editar Comercio (NUEVO) */}
+                          {/* Productos favoritos */}
+                          <div>
+                            <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
+                              <ShoppingBasket className="w-6 h-6 text-red-500" />{" "}
+                              Productos Favoritos
+                              <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">
+                                {favProducts.length}
+                              </span>
+                            </h3>
+                            {favProducts.length === 0 ? (
+                              <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
+                                No has guardado ningún producto aún.
+                              </p>
+                            ) : (
+                              <div className="space-y-3">
+                                {favProducts.map((prod) => (
+                                  <div
+                                    key={prod.id_producto}
+                                    className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all group"
+                                  >
+                                    <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                      <img
+                                        src={prod.imagen}
+                                        alt={prod.nombre}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                      />
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="font-bold text-base-content leading-tight mb-1">
+                                        {prod.nombre}
+                                      </h4>
+                                      <p className="text-sm font-black text-jungle_teal">
+                                        {prod.precio}€
+                                      </p>
+                                    </div>
+                                    <Link href={`/tienda/${prod.id_comercio}`}>
+                                      <button className="btn btn-sm btn-circle btn-ghost text-base-content/40 hover:text-red-500 hover:bg-red-50 transition-colors mr-1">
+                                        <ExternalLink className="w-4 h-4" />
+                                      </button>
+                                    </Link>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* DESPLEGABLE DE VALORACIONES (DUEÑO) */}
+              <AnimatePresence>
+                {showValoraciones && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                    className="md:col-span-3 overflow-hidden origin-top relative z-30"
+                  >
+                    <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
+                      {loadingValoraciones ? (
+                        <div className="flex justify-center py-12">
+                          <span className="loading loading-spinner loading-lg text-amber-500"></span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-3 mb-6">
+                            <span className="text-3xl">
+                              <Star className="w-12 h-12 mb-3" />
+                            </span>
+                            <h3 className="font-black text-2xl text-base-content">
+                              Valoraciones recibidas
+                            </h3>
+                            {promedioValoraciones.total >= 5 && (
+                              <span className="badge badge-lg bg-amber-500 text-white font-black ml-auto">
+                                {promedioValoraciones.promedio} ★ (
+                                {promedioValoraciones.total})
+                              </span>
+                            )}
+                          </div>
+
+                          {valoraciones.length === 0 ? (
+                            <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
+                              Aún no has recibido ninguna valoración.
+                            </p>
+                          ) : (
+                            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                              {valoraciones.map((val) => (
+                                <div
+                                  key={val.id_valoracion}
+                                  className="bg-base-100 p-4 rounded-2xl border border-base-200"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-base-content">
+                                        {val.nombre_usuario}
+                                      </span>
+                                      <span className="text-amber-500 font-black">
+                                        {"★".repeat(val.puntuacion)}
+                                        {"☆".repeat(5 - val.puntuacion)}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-base-content/40">
+                                      {val.fecha
+                                        ? new Date(
+                                            val.fecha,
+                                          ).toLocaleDateString("es-ES")
+                                        : ""}
+                                    </span>
+                                  </div>
+                                  {val.comentario && (
+                                    <p className="text-sm text-base-content/70 italic">
+                                      "{val.comentario}"
+                                    </p>
+                                  )}
+                                  {val.nombre_producto && (
+                                    <p className="text-xs text-base-content/50 mt-1">
+                                      Producto: {val.nombre_producto}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* BLOQUE DUEÑO 4: Editar Comercio */}
               <div className="md:col-span-3 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300 transition-all duration-300 relative overflow-hidden">
                 <div
                   onClick={() => {
                     if (comercio) {
                       setShowShopForm(!showShopForm);
-                      if (!showShopForm) setShowFavorites(false);
+                      if (!showShopForm) {
+                        setShowFavorites(false);
+                        setShowValoraciones(false);
+                      }
                     } else {
-                      toast.info(
+                      toast.warning(
                         "Aún no has registrado un comercio. Ve a 'Registrar comercio'.",
                       );
-                      // Podrías redirigir a /registrar-comercio
                     }
                   }}
                   className="flex items-center justify-between group cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
                     <div
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${showShopForm ? "bg-jungle_teal text-white" : "bg-base-200 text-base-content group-hover:bg-jungle_teal/20 group-hover:text-jungle_teal"}`}
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${
+                        showShopForm
+                          ? "bg-jungle_teal text-white"
+                          : "bg-base-200 text-base-content group-hover:bg-jungle_teal/20 group-hover:text-jungle_teal"
+                      }`}
                     >
                       <Store
-                        className={`w-7 h-7 transition-transform duration-500 ${showShopForm ? "scale-110" : ""}`}
+                        className={`w-7 h-7 transition-transform duration-500 ${
+                          showShopForm ? "scale-110" : ""
+                        }`}
                       />
                     </div>
                     <div>
@@ -710,13 +917,16 @@ const handleLocationSelect = (coords) => {
                               Ubicación en el mapa
                             </label>
                             <LocationPicker
-                             onLocationSelect={handleLocationSelect}
-  onError={(mensaje) => toast.error(mensaje, "error")}
-  initialCoords={
-    shopFormData.latitud && shopFormData.longitud
-      ? { lat: parseFloat(shopFormData.latitud), lng: parseFloat(shopFormData.longitud) }
-      : null
-  }
+                              onLocationSelect={handleLocationSelect}
+                              onError={(mensaje) => toast.error(mensaje)}
+                              initialCoords={
+                                shopFormData.latitud && shopFormData.longitud
+                                  ? {
+                                      lat: parseFloat(shopFormData.latitud),
+                                      lng: parseFloat(shopFormData.longitud),
+                                    }
+                                  : null
+                              }
                             />
                             {shopFormData.latitud && shopFormData.longitud && (
                               <p className="text-xs text-base-content/50 mt-1">
@@ -795,18 +1005,19 @@ const handleLocationSelect = (coords) => {
               </div>
             </>
           ) : (
-            // Sección para cliente (se mantiene igual)
+            // ------------------------------------------------------------------
+            // VISTA PARA CLIENTE
+            // ------------------------------------------------------------------
             <>
-              {/* BLOQUE CLIENTE 1: PEDIDOS (2 Columnas) */}
-              <div className="md:col-span-2 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/40 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
+              {/* BLOQUE CLIENTE 1: Historial de Pedidos */}
+              <div className="md:col-span-1 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300 hover:shadow-md hover:border-jungle_teal/40 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute right-0 top-0 w-64 h-full bg-linear-to-l from-base-200/50 to-transparent pointer-events-none"></div>
                 <div className="relative z-10">
                   <h2 className="text-2xl font-black mb-2 text-base-content group-hover:text-jungle_teal transition-colors">
                     Historial de Pedidos
                   </h2>
-                  <p className="text-base-content/60 max-w-sm">
-                    Revisa el estado de tus compras recientes, descarga tus
-                    recibos y vuelve a pedir lo que te gusta.
+                  <p className="text-base-content/60 max-w-sm text-sm">
+                    Revisa tus compras recientes.
                   </p>
                 </div>
                 <div className="mt-8 flex justify-end relative z-10">
@@ -818,11 +1029,44 @@ const handleLocationSelect = (coords) => {
                 </div>
               </div>
 
-              {/* BLOQUE CLIENTE 2: FAVORITOS TRIGGER */}
+              {/* BLOQUE CLIENTE 2: Mis Valoraciones */}
+              <div
+                onClick={() => {
+                  setShowValoraciones(!showValoraciones);
+                  if (!showValoraciones) {
+                    fetchValoracionesCliente();
+                    setShowFavorites(false);
+                    setShowSettings(false);
+                  }
+                }}
+                className={`md:col-span-1 rounded-[2.5rem] p-8 shadow-sm transition-all duration-300 cursor-pointer flex flex-col justify-center relative overflow-hidden ${
+                  showValoraciones
+                    ? "bg-amber-500 text-white shadow-xl shadow-amber-500/20 scale-[0.97]"
+                    : "bg-amber-600 text-white hover:bg-amber-500 hover:-translate-y-1"
+                }`}
+              >
+                <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="relative z-10">
+                  <span className="text-4xl mb-3 block">
+                    <NotebookPen className="w-12 h-12 mb-3" />
+                  </span>
+                  <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
+                    Mis Valoraciones
+                  </h2>
+                  <p className="text-white/80 text-sm font-medium">
+                    Ver mis reseñas
+                  </p>
+                </div>
+              </div>
+
+              {/* BLOQUE CLIENTE 3: Favoritos */}
               <div
                 onClick={() => {
                   setShowFavorites(!showFavorites);
-                  if (!showFavorites) setShowSettings(false);
+                  if (!showFavorites) {
+                    setShowValoraciones(false);
+                    setShowSettings(false);
+                  }
                 }}
                 className={`md:col-span-1 rounded-[2.5rem] p-8 shadow-sm transition-all duration-300 cursor-pointer flex flex-col justify-center relative overflow-hidden ${
                   showFavorites
@@ -833,7 +1077,11 @@ const handleLocationSelect = (coords) => {
                 <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <div className="relative z-10">
                   <Heart
-                    className={`w-12 h-12 mb-3 transition-all duration-500 ${showFavorites ? "fill-white drop-shadow-md scale-110" : "fill-white/20"}`}
+                    className={`w-12 h-12 mb-3 transition-all duration-500 ${
+                      showFavorites
+                        ? "fill-white drop-shadow-md scale-110"
+                        : "fill-white/20"
+                    }`}
                   />
                   <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
                     Tus Favoritos
@@ -843,27 +1091,222 @@ const handleLocationSelect = (coords) => {
                   </p>
                 </div>
               </div>
+
+              {/* DESPLEGABLE DE FAVORITOS (CLIENTE) */}
+              <AnimatePresence>
+                {showFavorites && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                    className="md:col-span-3 overflow-hidden origin-top relative z-30"
+                  >
+                    <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
+                      {loadingFavs ? (
+                        <div className="flex justify-center py-12">
+                          <span className="loading loading-spinner loading-lg text-red-500"></span>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {/* Tiendas favoritas */}
+                          <div>
+                            <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
+                              <Store className="w-6 h-6 text-red-500" /> Tiendas
+                              Favoritas
+                              <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">
+                                {favShops.length}
+                              </span>
+                            </h3>
+                            {favShops.length === 0 ? (
+                              <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
+                                No has guardado ninguna tienda aún.
+                              </p>
+                            ) : (
+                              <div className="space-y-3">
+                                {favShops.map((shop) => (
+                                  <Link
+                                    key={shop.id_comercio}
+                                    href={`/tienda/${shop.id_comercio}`}
+                                  >
+                                    <div className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all cursor-pointer group">
+                                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                        <img
+                                          src={shop.imagen}
+                                          alt={shop.nombre}
+                                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                      </div>
+                                      <div className="flex-1">
+                                        <h4 className="font-bold text-base-content">
+                                          {shop.nombre}
+                                        </h4>
+                                        <p className="text-xs text-base-content/50">
+                                          {shop.categoria}
+                                        </p>
+                                      </div>
+                                      <ExternalLink className="w-5 h-5 text-base-content/20 group-hover:text-red-500 transition-colors mr-3" />
+                                    </div>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Productos favoritos */}
+                          <div>
+                            <h3 className="font-black text-xl mb-6 flex items-center gap-3 text-base-content">
+                              <ShoppingBasket className="w-6 h-6 text-red-500" />{" "}
+                              Productos Favoritos
+                              <span className="badge badge-sm bg-red-100 text-red-600 border-none font-bold">
+                                {favProducts.length}
+                              </span>
+                            </h3>
+                            {favProducts.length === 0 ? (
+                              <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
+                                No has guardado ningún producto aún.
+                              </p>
+                            ) : (
+                              <div className="space-y-3">
+                                {favProducts.map((prod) => (
+                                  <div
+                                    key={prod.id_producto}
+                                    className="flex items-center gap-4 bg-base-100 p-3 rounded-2xl border border-base-200 hover:border-red-300 hover:shadow-md transition-all group"
+                                  >
+                                    <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                                      <img
+                                        src={prod.imagen}
+                                        alt={prod.nombre}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                      />
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="font-bold text-base-content leading-tight mb-1">
+                                        {prod.nombre}
+                                      </h4>
+                                      <p className="text-sm font-black text-jungle_teal">
+                                        {prod.precio}€
+                                      </p>
+                                    </div>
+                                    <Link href={`/tienda/${prod.id_comercio}`}>
+                                      <button className="btn btn-sm btn-circle btn-ghost text-base-content/40 hover:text-red-500 hover:bg-red-50 transition-colors mr-1">
+                                        <ExternalLink className="w-4 h-4" />
+                                      </button>
+                                    </Link>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* DESPLEGABLE DE VALORACIONES (CLIENTE) */}
+              <AnimatePresence>
+                {showValoraciones && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+                    className="md:col-span-3 overflow-hidden origin-top relative z-30"
+                  >
+                    <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
+                      {loadingValoraciones ? (
+                        <div className="flex justify-center py-12">
+                          <span className="loading loading-spinner loading-lg text-amber-500"></span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-3 mb-6">
+                            <span className="text-3xl">
+                              <NotebookPen />
+                            </span>
+                            <h3 className="font-black text-2xl text-base-content">
+                              Mis valoraciones
+                            </h3>
+                          </div>
+
+                          {valoraciones.length === 0 ? (
+                            <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
+                              Aún no has hecho ninguna valoración.
+                            </p>
+                          ) : (
+                            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                              {valoraciones.map((val) => (
+                                <div
+                                  key={val.id_valoracion}
+                                  className="bg-base-100 p-4 rounded-2xl border border-base-200"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-base-content">
+                                        {val.nombre_comercio || "Tienda"}
+                                      </span>
+                                      <span className="text-amber-500 font-black">
+                                        {"★".repeat(val.puntuacion)}
+                                        {"☆".repeat(5 - val.puntuacion)}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-base-content/40">
+                                      {val.fecha
+                                        ? new Date(
+                                            val.fecha,
+                                          ).toLocaleDateString("es-ES")
+                                        : ""}
+                                    </span>
+                                  </div>
+                                  {val.comentario && (
+                                    <p className="text-sm text-base-content/70 italic">
+                                      "{val.comentario}"
+                                    </p>
+                                  )}
+                                  {val.nombre_producto && (
+                                    <p className="text-xs text-base-content/50 mt-1">
+                                      Producto: {val.nombre_producto}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
 
-          {/* DESPLEGABLE DE FAVORITOS (común) */}
-         
-
-          {/* BLOQUE COMÚN: AJUSTES DE CUENTA */}
+          {/* ===== BLOQUE COMÚN: AJUSTES DE CUENTA ===== */}
           <div className="md:col-span-3 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300 transition-all duration-300 relative overflow-hidden">
             <div
               onClick={() => {
                 setShowSettings(!showSettings);
-                if (!showSettings) setShowFavorites(false);
+                if (!showSettings) {
+                  setShowFavorites(false);
+                  setShowValoraciones(false);
+                }
               }}
               className="flex items-center justify-between group cursor-pointer"
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${showSettings ? "bg-yellow text-white" : "bg-base-200 text-base-content group-hover:bg-yellow-100 group-hover:text-yellow-600"}`}
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-500 ${
+                    showSettings
+                      ? "bg-yellow-500 text-white"
+                      : "bg-base-200 text-base-content group-hover:bg-yellow-100 group-hover:text-yellow-600"
+                  }`}
                 >
                   <Settings
-                    className={`w-7 h-7 transition-transform duration-500 ${showSettings ? "rotate-90" : ""}`}
+                    className={`w-7 h-7 transition-transform duration-500 ${
+                      showSettings ? "rotate-90" : ""
+                    }`}
                   />
                 </div>
                 <div>
@@ -891,7 +1334,7 @@ const handleLocationSelect = (coords) => {
                     onSubmit={handleSave}
                     className="mt-8 pt-8 border-t border-base-200"
                   >
-                    <div className="mb-6 p-5 bg-yellow-700 border border-yellow rounded-2xl flex gap-3 text-info items-start">
+                    <div className="mb-6 p-5 bg-yellow-700 border border-yellow-500 rounded-2xl flex gap-3 items-start">
                       <Lock className="text-yellow-300" />
                       <p className="text-sm font-medium text-yellow-300">
                         Por tu seguridad, necesitas introducir tu contraseña

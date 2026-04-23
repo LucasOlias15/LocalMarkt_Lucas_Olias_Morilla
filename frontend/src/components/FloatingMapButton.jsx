@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'wouter';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LocateFixed } from 'lucide-react';
 
 export const FloatingMapButton = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -59,7 +60,7 @@ export const FloatingMapButton = () => {
             {/* Tooltip */}
             {/* CAMBIOS AQUÍ: En móvil ocultamos el tooltip con hidden md:block porque en táctil no tiene sentido un tooltip al vuelo */}
             <span className="hidden md:block absolute -top-10 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 whitespace-nowrap bg-base-100 text-base-content text-xs font-bold px-3 py-1.5 rounded-lg shadow-md opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none border border-base-200">
-              📍 Cerca de mí
+               Cerca de mí
             </span>
 
           </div>
