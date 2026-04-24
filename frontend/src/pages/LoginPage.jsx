@@ -3,10 +3,9 @@ import { Link, useLocation } from "wouter";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { ForgotPasswordModal } from "../components/common/ForgotPasswordModal";
-
+import { PasswordInput } from "../components/common/PasswordInput";
 
 export const LoginPage = () => {
-
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
   // Estados del formulario
@@ -54,7 +53,7 @@ export const LoginPage = () => {
         className="w-full max-w-5xl bg-base-100 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/20 z-10"
       >
         {/* LADO IZQUIERDO: Formulario de Login        */}
-  
+
         <div className="md:w-7/12 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-base-100 relative">
           <div className="mb-10 text-center md:text-left">
             <h1 className="text-4xl font-black text-base-content mb-3 leading-tight tracking-tight">
@@ -92,7 +91,9 @@ export const LoginPage = () => {
               <label className="text-xs font-bold uppercase tracking-widest text-base-content/70 ml-1 flex justify-between">
                 <span>Contraseña</span>
                 <a
-                  onClick={() => document.getElementById('forgot_password_modal').showModal()}
+                  onClick={() =>
+                    document.getElementById("forgot_password_modal").showModal()
+                  }
                   className="text-jungle_teal hover:underline normal-case tracking-normal text-sm font-semibold cursor-pointer"
                 >
                   ¿Olvidaste tu contraseña?
@@ -102,13 +103,11 @@ export const LoginPage = () => {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
                   <Lock size={18} />
                 </div>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-4 rounded-xl bg-base-200/50 border-2 border-transparent text-base text-base-content outline-none focus:bg-base-100 focus:border-jungle_teal focus:ring-2 focus:ring-jungle_teal/10 transition-all"
+                <PasswordInput
+                  name="clave"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  placeholder="Contraseña"
                 />
               </div>
             </div>

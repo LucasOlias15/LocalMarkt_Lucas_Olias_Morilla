@@ -26,9 +26,9 @@ import {
 import { useState } from "react";
 import { LocationPicker } from "../components/map/LocationPicker";
 import { Link, useLocation } from "wouter";
+import { PasswordInput } from "../components/common/PasswordInput";
 
 export const RegisterPage = () => {
-
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
   // 1. ESTADOS DEL FORMULARIO
@@ -465,13 +465,11 @@ export const RegisterPage = () => {
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/40">
                     <Lock size={18} />
                   </div>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
+                  <PasswordInput
+                    name="clave"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-base-200/50 border-2 border-transparent text-base text-base-content outline-none focus:bg-base-100 focus:border-jungle_teal transition-all"
-                    required
+                    placeholder="Contraseña"
                   />
                 </div>
               </div>
@@ -521,7 +519,8 @@ export const RegisterPage = () => {
               toast.tipo === "error" ? " bg-red-100" : "bg-jungle_teal"
             }`}
           >
-            <MapPinX/><span>{toast.mensaje}</span>
+            <MapPinX />
+            <span>{toast.mensaje}</span>
           </div>
         </div>
       )}
