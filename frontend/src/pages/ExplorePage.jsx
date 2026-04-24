@@ -43,7 +43,11 @@ export const ExplorePage = () => {
     "Artesanía y regalos",
     "Pastelería",
   ];
-  const usuario = JSON.parse(localStorage.getItem("user"));
+  const [user, setUser] = useState(null);
+useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) setUser(JSON.parse(storedUser));
+}, []);
 
   // --- Enrutamiento (Wouter) ---
   const searchString = useSearch();

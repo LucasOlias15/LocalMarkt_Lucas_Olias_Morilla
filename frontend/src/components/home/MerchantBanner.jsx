@@ -8,11 +8,17 @@ import {
   Rocket,
   ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { ShopPromotionModal } from "../shop/ShopPromotionModal";
 
 export const MerchantBanner = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  
+const [user, setUser] = useState(null);
+useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) setUser(JSON.parse(storedUser));
+}, []);
+
   const [infoAbierta, setInfoAbierta] = useState(false);
 
   return (
