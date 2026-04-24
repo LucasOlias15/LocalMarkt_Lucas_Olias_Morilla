@@ -11,6 +11,7 @@ import { ExplorePage } from './pages/ExplorePage';
 import { OrdersPage } from './pages/OrdersPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ToastContainer } from './components/common/ToastContainer';
+import { Analytics } from "@vercel/analytics/next"
 
 function App() {
   return (
