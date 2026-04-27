@@ -124,7 +124,7 @@ export const ContactModal = ({ isOpen, onClose, comercio }) => {
         {/* Pie */}
         <div className="p-4 border-t border-base-200 bg-base-200/30 text-center">
           <p className="text-xs text-base-content/50">
-            Contacta directamente con la tienda para cualquier consulta sobre tu
+            Contacta con la tienda para cualquier consulta sobre tu
             pedido.
           </p>
         </div>
