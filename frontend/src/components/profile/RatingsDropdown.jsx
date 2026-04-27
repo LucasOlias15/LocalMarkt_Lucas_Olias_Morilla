@@ -25,7 +25,7 @@ export const RatingsDropdown = ({
         ) : (
           <>
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl">{isOwner ? "⭐" : <NotebookPen/>}</span>
+              <span className="text-3xl"><NotebookPen/></span>
               <h3 className="font-black text-2xl text-base-content">
                 {isOwner ? "Valoraciones recibidas" : "Mis valoraciones"}
               </h3>

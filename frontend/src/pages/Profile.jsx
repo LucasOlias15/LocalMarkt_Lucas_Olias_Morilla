@@ -300,6 +300,28 @@ export const Profile = () => {
                 toast={toast}
               />
 
+              {/* DESPLEGABLES */}
+              <AnimatePresence>
+                {showFavorites && (
+                  <FavoritesDropdown
+                    loadingFavs={loadingFavs}
+                    favShops={favShops}
+                    favProducts={favProducts}
+                  />
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {showValoraciones && (
+                  <RatingsDropdown
+                    loadingValoraciones={loadingValoraciones}
+                    valoraciones={valoraciones}
+                    promedioValoraciones={promedioValoraciones}
+                    userRol={user.rol}
+                  />
+                )}
+              </AnimatePresence>
+
               {/* BLOQUE EDITAR COMERCIO */}
               <div className="md:col-span-3 bg-base-200 rounded-[2.5rem] p-8 shadow-sm border border-base-300">
                 <div
@@ -349,27 +371,6 @@ export const Profile = () => {
                 </AnimatePresence>
               </div>
 
-              {/* DESPLEGABLES */}
-              <AnimatePresence>
-                {showFavorites && (
-                  <FavoritesDropdown
-                    loadingFavs={loadingFavs}
-                    favShops={favShops}
-                    favProducts={favProducts}
-                  />
-                )}
-              </AnimatePresence>
-
-              <AnimatePresence>
-                {showValoraciones && (
-                  <RatingsDropdown
-                    loadingValoraciones={loadingValoraciones}
-                    valoraciones={valoraciones}
-                    promedioValoraciones={promedioValoraciones}
-                    userRol={user.rol}
-                  />
-                )}
-              </AnimatePresence>
             </>
           ) : (
             // BLOQUE USUARIO = CLIENTE

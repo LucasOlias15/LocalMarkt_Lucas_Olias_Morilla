@@ -9,7 +9,7 @@ export const FavoritesDropdown = ({ loadingFavs, favShops, favProducts }) => {
       animate={{ opacity: 1, height: "auto", scale: 1 }}
       exit={{ opacity: 0, height: 0, scale: 0.95 }}
       transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
-      className="md:col-span-3 overflow-hidden origin-top relative z-30"
+      className="md:col-span-3 overflow-hidden origin-top relative z-20"
     >
       <div className="bg-base-200 rounded-[2.5rem] p-8 border border-base-300 shadow-inner">
         {loadingFavs ? (

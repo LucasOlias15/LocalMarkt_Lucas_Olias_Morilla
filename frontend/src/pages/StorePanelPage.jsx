@@ -453,8 +453,8 @@ export const StorePanelPage = () => {
                   Tus Productos
                 </h2>
                 {products.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-base-200/30 rounded-3xl border-2 border-dashed border-base-content/20">
-                    <PackageOpen className="w-24 h-24 text-base-content/50 mb-4 stroke-[1.5]" />
+                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-base-200/30 rounded-3xl border border-base-200">
+                    <PackageOpen className="w-24 h-24 text-base-content mb-4 stroke-[1.5]" />
                     <h3 className="text-2xl font-black text-base-content mb-2">
                       Tu escaparate está vacío
                     </h3>
@@ -497,7 +497,6 @@ export const StorePanelPage = () => {
                                 <div>
                                   <div className="font-bold text-base-content flex items-center gap-2">
                                     {product.nombre}
-                                    {/* ✨ ALERTA VISUAL DE STOCK PARA EL DUEÑO ✨ */}
                                     {product.stock <= 0 ? (
                                       <span className="badge badge-error badge-sm text-white font-black ">
                                         Sin stock

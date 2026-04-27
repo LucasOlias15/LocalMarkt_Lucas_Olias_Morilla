@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Store as StoreIcon, Heart, ArrowRight } from "lucide-react";
+import { Store as StoreIcon, Heart, ArrowRight, NotebookPen } from "lucide-react";
 
 export const OwnerSection = ({ 
   comercio, 
@@ -60,7 +60,7 @@ export const OwnerSection = ({
       >
         <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
         <div className="relative z-10">
-          <span className="text-4xl mb-3 block">⭐</span>
+          <span className="text-4xl mb-3 block"><NotebookPen className="w-12 h-12 mb-3"/></span>
           <h2 className="font-black opacity-90 uppercase tracking-wider text-sm mb-1">
             Valoraciones
           </h2>
