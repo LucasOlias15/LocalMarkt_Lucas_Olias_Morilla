@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRoute } from "wouter";
 import { ProductCard } from "../components/product/ProductCard";
-import { Heart, ShieldBan } from "lucide-react";
+import { Heart, MapPinHouse, ShieldBan, Star } from "lucide-react";
 import { ContactModal } from "../components/common/ContactModal";
+import useToastStore from "../store/useToastStore";
 
 export const ShopDetail = () => {
-
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-  const [, params] = useRoute("/tienda/:id");
+  const toast = useToastStore();  
+ 
+ const [, params] = useRoute("/tienda/:id");
 
   // Rescatamos al usuario de forma segura
   const userString = localStorage.getItem("user");
@@ -21,6 +23,7 @@ export const ShopDetail = () => {
   const [shopInfo, setShopInfo] = useState(null);
   const [errorTienda, setErrorTienda] = useState(false);
   const [contactModalAbierto, setContactModalAbierto] = useState(false);
+  
 
   // El estado para guardar la lista de IDs favoritos de este usuario
   const [favProductos, setFavProductos] = useState([]);
@@ -50,8 +53,7 @@ export const ShopDetail = () => {
         // 2. Pedimos favoritos (SOLO si hay usuario)
         if (usuario) {
           const userId = usuario.id || usuario.id_usuario;
-          const resFavs = await fetch(`${API_URL}/favoritos/${userId}`,
-          );
+          const resFavs = await fetch(`${API_URL}/favoritos/${userId}`);
           if (resFavs.ok) {
             const dataFavs = await resFavs.json();
             // Filtramos solo los IDs de los productos favoritos
@@ -80,8 +82,8 @@ export const ShopDetail = () => {
             ? [dataComercio.categoria]
             : ["General"],
           image: dataComercio.imagen,
-            contacto: dataComercio.contacto,        // ← AÑADIR
-            email: dataComercio.email_contacto,
+          contacto: dataComercio.contacto, // ← AÑADIR
+          email: dataComercio.email_contacto,
         });
 
         // LÓGICA: Guardamos los productos en el estado
@@ -107,32 +109,50 @@ export const ShopDetail = () => {
 
   // Lógica para guardar LA TIENDA en favoritos
   const handleToggleTienda = async () => {
-    if (!usuario) return;
+  if (!usuario) {
+    toast.warning("Inicia sesión para guardar favoritos.");
+    return;
+  }
 
-    const idComercioNum = Number(params.id);
-    const yaEsFavorita = favComercios.includes(idComercioNum);
+  const idComercioNum = Number(params.id);
+  const yaEsFavorita = favComercios.includes(idComercioNum);
 
-    // Actualizamos el array visualmente
-    if (yaEsFavorita) {
-      setFavComercios(favComercios.filter((id) => id !== idComercioNum));
+  // Actualizamos el array visualmente
+  if (yaEsFavorita) {
+    setFavComercios(favComercios.filter((id) => id !== idComercioNum));
+  } else {
+    setFavComercios([...favComercios, idComercioNum]);
+  }
+
+  // Enviamos a la BD
+  try {
+    const res = await fetch(`${API_URL}/favoritos/toggleFavs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_usuario: usuario.id || usuario.id_usuario,
+        id_comercio: idComercioNum,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      toast.success(data.message || (yaEsFavorita ? "Tienda eliminada de favoritos" : "Tienda añadida a favoritos ⭐"));
     } else {
-      setFavComercios([...favComercios, idComercioNum]);
+      throw new Error(data.error);
     }
-
-    // Enviamos a la BD
-    try {
-      await fetch(`${API_URL}/favoritos/toggleFavs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_usuario: usuario.id || usuario.id_usuario,
-          id_comercio: idComercioNum,
-        }),
-      });
-    } catch (error) {
-      console.error("Error al guardar tienda", error);
+  } catch (error) {
+    console.error("Error al guardar tienda", error);
+    toast.error("Error al guardar favorito");
+    // Revertir cambio visual
+    if (yaEsFavorita) {
+      setFavComercios(prev => [...prev, idComercioNum]);
+    } else {
+      setFavComercios(prev => prev.filter(id => id !== idComercioNum));
     }
-  };
+  }
+};
 
   if (errorTienda) {
     return (
@@ -235,11 +255,13 @@ export const ShopDetail = () => {
                   </div>
 
                   <div className="flex flex-wrap gap-3 mb-8">
-                    <span className="badge badge-lg bg-jungle_teal dark:bg-jungle_teal-400 text-white border-none py-4 px-6 font-bold shadow-lg shadow-jungle_teal/20">
-                      📍 {shopInfo.address}
+                    <span className="badge badge-lg bg-jungle_teal dark:bg-jungle_teal-400 text-white border-none py-4.5 font-bold shadow-lg shadow-jungle_teal/20">
+                      <MapPinHouse className="text-gray-800" />{" "}
+                      {shopInfo.address}
                     </span>
-                    <span className="badge badge-lg bg-yellow-400 text-jungle_teal-200 border-none py-4 px-6 font-bold">
-                      ⭐ {shopInfo.rating} Calificación
+                    <span className="badge badge-lg bg-yellow-600 text-jungle_teal-200 border-none py-4.5 font-bold">
+                      <Star className="text-amber-400 fill-amber-400" />{" "}
+                      {shopInfo.rating} Calificación
                     </span>
                   </div>
 

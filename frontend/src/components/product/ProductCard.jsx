@@ -1,15 +1,26 @@
 import { motion } from "framer-motion";
 import { useCartStore } from "../../store/useCartStore";
-import { HeartPlus } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useState } from "react";
+import useToastStore from "../../store/useToastStore";
 
 export const ProductCard = ({ product, isFavorito }) => {
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  
   const addToCart = useCartStore((state) => state.addToCart);
+  const toast = useToastStore();
   const [prodFavorito, setProdFavorito] = useState(isFavorito);
 
   const handleAdd = () => {
     const userString = localStorage.getItem("user");
-    const userId = userString ? JSON.parse(userString).id : null;
+    const usuario = userString ? JSON.parse(userString) : null;
+    
+    if (!usuario) {
+      toast.warning("Inicia sesión para añadir productos.");
+      return;
+    }
+    
+    const userId = usuario.id || usuario.id_usuario;
 
     const productForCart = {
       id_producto: product.id || product.id_producto,
@@ -21,6 +32,7 @@ export const ProductCard = ({ product, isFavorito }) => {
 
     addToCart(userId, productForCart);
     window.dispatchEvent(new CustomEvent("openCart"));
+    toast.success(`¡${productForCart.nombre} añadido al carrito!`);
   };
 
   const handleFavorito = async (e) => {
@@ -29,27 +41,34 @@ export const ProductCard = ({ product, isFavorito }) => {
     const usuario = userString ? JSON.parse(userString) : null;
 
     if (!usuario) {
-      console.log("Usuario no logueado");
-      return; 
+      toast.warning("Inicia sesión para guardar favoritos.");
+      return;
     }
 
-    // 1. Cambiamos el color al instante para que el usuario lo vea rápido
-    setProdFavorito(!prodFavorito);
+    const nuevoEstado = !prodFavorito;
+    setProdFavorito(nuevoEstado);
 
-    // 2. Avisamos a la base de datos en segundo plano
     try {
-      await fetch(`http://localhost:3000/api/favoritos/toggleFavs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_URL}/favoritos/toggleFavs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_usuario: usuario.id || usuario.id_usuario,
-          id_producto: product.id || product.id_producto
-        })
+          id_producto: product.id || product.id_producto,
+        }),
       });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(data.message || (nuevoEstado ? "Añadido a favoritos" : "Eliminado de favoritos"));
+      } else {
+        throw new Error(data.error);
+      }
     } catch (error) {
       console.error("Error al guardar favorito", error);
-      // Si falla la BD, volvemos a poner el color como estaba
-      setProdFavorito(prodFavorito); 
+      toast.error("Error al guardar favorito");
+      setProdFavorito(!nuevoEstado); // Revertir de true a false y viceversa
     }
   };
 
@@ -91,11 +110,11 @@ export const ProductCard = ({ product, isFavorito }) => {
             onClick={handleFavorito}
             className={`flex-1 h-14 flex items-center justify-center rounded-2xl transition-all duration-300 cursor-pointer ${
               prodFavorito
-                ? "bg-red-100 dark:bg-red-900/30 text-red-500" 
-                : "bg-base-200 dark:bg-base-300 text-base-content/40 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" 
+                ? "bg-red-100 dark:bg-red-900/30 text-red-500"
+                : "bg-base-200 dark:bg-base-300 text-base-content/40 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             }`}
           >
-            <HeartPlus
+            <Heart
               size={24}
               fill={prodFavorito ? "currentColor" : "none"}
             />
