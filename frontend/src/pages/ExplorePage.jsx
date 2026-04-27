@@ -12,7 +12,6 @@ import { motion } from "framer-motion";
 import useToastStore from "../store/useToastStore";
 
 export const ExplorePage = () => {
-
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
   // --- Datos ---
@@ -28,6 +27,7 @@ export const ExplorePage = () => {
 
   // --- UI y Usuario ---
   const toast = useToastStore();
+  const [usuario, setUsuario] = useState(null);
 
   // --- Favoritos ---
   const [favProductos, setFavProductos] = useState([]);
@@ -43,11 +43,13 @@ export const ExplorePage = () => {
     "Artesanía y regalos",
     "Pastelería",
   ];
-  const [user, setUser] = useState(null);
-useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) setUser(JSON.parse(storedUser));
-}, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUsuario(JSON.parse(storedUser));
+    }
+  }, []);
 
   // --- Enrutamiento (Wouter) ---
   const searchString = useSearch();
@@ -83,7 +85,8 @@ useEffect(() => {
         setProducts(dataProducts);
 
         if (usuario) {
-          const resFavs = await fetch(`${API_URL}/favoritos/${usuario.id || usuario.id_usuario}`,
+          const resFavs = await fetch(
+            `${API_URL}/favoritos/${usuario.id || usuario.id_usuario}`,
           );
           if (resFavs.ok) {
             const dataFavs = await resFavs.json();
@@ -138,13 +141,11 @@ useEffect(() => {
     if (tipo === "comercio") payload.id_comercio = id;
 
     try {
-      const res = await fetch(`${API_URL}/favoritos/toggleFavs`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+      const res = await fetch(`${API_URL}/favoritos/toggleFavs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
 

@@ -2,11 +2,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "../../store/useCartStore";  
 import { useState } from "react";
 import { Link } from "wouter";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, UserLock } from "lucide-react";
 import useToastStore from "../../store/useToastStore";      
 
 export const CartDrawer = ({ isOpen, onClose }) => {
-  // ... resto del código
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.id || user?.id_usuario;
 
@@ -33,7 +32,6 @@ export const CartDrawer = ({ isOpen, onClose }) => {
       const productoValido = cart.find((item) => item.id_comercio != null);
 
       if (!productoValido) {
-        // Sustituimos el alert por nuestra notificación
         toast.error("Carrito desactualizado. Por favor, vacíalo y vuelve a añadir los productos.");
         setIsCheckingOut(false);
         return;
@@ -104,7 +102,6 @@ export const CartDrawer = ({ isOpen, onClose }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              // Cambiamos z-199 por z-[999]
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-999 cursor-pointer"
             />
 
@@ -114,7 +111,6 @@ export const CartDrawer = ({ isOpen, onClose }) => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              // Cambiamos z-999 por z-[1000]
               className="fixed right-0 top-0 h-full w-full max-w-md bg-base-100 shadow-[-20px_0_50px_rgba(0,0,0,0.2)] z-1000 flex flex-col border-l border-base-200"
             >
               {/* Cabecera del Carrito */}
@@ -138,7 +134,7 @@ export const CartDrawer = ({ isOpen, onClose }) => {
               {/* --- LÓGICA DE VISTAS --- */}
               {!userId ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center opacity-80">
-                  <span className="text-6xl mb-4">🔐</span>
+                  <span className="text-6xl mb-4"><UserLock/></span>
                   <p className="font-bold text-xl mb-2">
                     Inicia sesión para comprar
                   </p>
