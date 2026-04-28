@@ -1,64 +1,88 @@
-Stack Tecnológico y Arquitectura
-1. Frontend (Interfaz de Usuario)
-La aplicación cliente está construida como una SPA (Single Page Application) moderna, priorizando el rendimiento y las animaciones fluidas.
+# 🛒 LocalMarkt - El mercado de tu barrio, ahora en digital
 
-Core y Entorno:
+![LocalMarkt](./frontend/public/LogoLocalMarkt.svg)
 
-React: Librería principal para la construcción de interfaces de usuario basadas en componentes.
+Aplicación web para conectar el comercio local con los vecinos. Los clientes pueden descubrir tiendas, comprar productos y valorar sus pedidos. Los dueños pueden gestionar su catálogo, pedidos y perfil desde un panel de administración.
 
-Vite: Herramienta de construcción (Bundler) ultrarrápida que reemplaza a Create React App, optimizando el tiempo de desarrollo y el peso final del proyecto.
+---
 
-Enrutamiento y Estado:
+## 🚀 Demo en producción
 
-Wouter: Enrutador minimalista para React. Se utiliza por su bajo peso y simplicidad para manejar las rutas (ej. /tienda/:id) frente a alternativas más pesadas.
+- **Frontend:** [https://proyecto-final-grado-lucas-olias-mo.vercel.app](https://proyecto-final-grado-lucas-olias-mo.vercel.app)
+- **Backend API:** [https://localmarkt-backend.onrender.com](https://localmarkt-backend.onrender.com)
 
-Zustand: Gestor de estado global pequeño, rápido y escalable. Perfecto para manejar estados compartidos sin la complejidad del boilerplate tradicional.
+---
 
-Estilos y Diseño (UI/UX):
+## 🎯 Funcionalidades principales
 
-TailwindCSS: Framework de CSS basado en utilidades que permite construir diseños a medida rápidamente sin salir del HTML/JSX.
+### 👤 Para Clientes
+- Registro e inicio de sesión
+- Explorar tiendas y productos por categoría
+- Buscador con filtros
+- Mapa interactivo con geolocalización
+- Carrito de compras con Zustand
+- Realizar pedidos (simulación de pago)
+- Historial de pedidos con ticket detallado
+- Valorar compras (1-5 estrellas + comentario)
+- Guardar tiendas y productos favoritos
+- Contactar con comercios (teléfono y email)
+- Modo oscuro/claro
 
-DaisyUI: Biblioteca de componentes de interfaz de usuario conectada como plugin a TailwindCSS. Aporta clases semánticas (ej. btn, card) y temas de color (light/dark mode).
+### 🏪 Para Dueños
+- Panel de gestión de tienda
+- Añadir, editar y eliminar productos
+- Gestionar pedidos (cambiar estado)
+- Editar datos del comercio (nombre, dirección, ubicación en mapa, imagen)
+- Ver valoraciones recibidas
+- Perfil con estadísticas
+- Eliminar cuenta
 
-Framer-Motion: Librería de animaciones de grado de producción para React. Utilizada para transiciones suaves de componentes (fade-ins, deslizamientos en listas y tarjetas).
+---
 
-Lucide-React: Paquete de iconos SVG limpios, consistentes y altamente personalizables.
+## 🧠 Stack Tecnológico y Arquitectura
 
-Mapas y Geolocalización:
+### 1. Frontend (Interfaz de Usuario)
 
-Leaflet: Librería JavaScript open-source para mapas interactivos mobile-friendly (integrada para la visualización de comercios/direcciones).
+| Categoría | Tecnología | Descripción |
+|-----------|------------|-------------|
+| **Core** | React 19 | Librería principal para interfaces basadas en componentes |
+| **Bundler** | Vite 5 | Herramienta de construcción ultrarrápida |
+| **Enrutador** | Wouter | Enrutador minimalista y ligero |
+| **Estado global** | Zustand | Gestor de estado para carrito y toasts |
+| **Estilos** | TailwindCSS 4 + DaisyUI 5 | CSS utilitario + componentes semánticos |
+| **Animaciones** | Framer Motion | Transiciones suaves y animaciones |
+| **Iconos** | Lucide React | Iconos SVG consistentes y personalizables |
+| **Mapas** | Leaflet + React Leaflet | Mapa interactivo con geolocalización |
 
-2. Backend (Servidor y API)
-El servidor está desarrollado con una arquitectura RESTful para separar claramente la lógica de negocio de la interfaz.
+### 2. Backend (Servidor y API REST)
 
-Entorno de Ejecución y Framework:
+| Categoría | Tecnología | Descripción |
+|-----------|------------|-------------|
+| **Entorno** | Node.js 18+ | JavaScript en el servidor |
+| **Framework** | Express 5 | API RESTful con rutas, controladores y middlewares |
+| **Autenticación** | JWT (jsonwebtoken) + bcrypt | Tokens seguros y contraseñas encriptadas |
+| **Middleware** | CORS, Multer | Peticiones cross-origin y subida de archivos |
 
-Node.js: Entorno de ejecución de JavaScript del lado del servidor.
+### 3. Base de Datos y Servicios Cloud
 
-Express.js: Framework minimalista y flexible para Node.js, utilizado para estructurar las rutas, controladores y middlewares de la API (/api/comercios, /api/favoritos, etc.).
+| Categoría | Tecnología | Descripción |
+|-----------|------------|-------------|
+| **Base de datos** | MySQL 8.0 | Base de datos relacional |
+| **Driver** | mysql2 | Conexión con promesas nativas (async/await) |
+| **Hosting BD** | Clever Cloud | MySQL gestionado en la nube (gratuito) |
+| **Imágenes** | Cloudinary | Almacenamiento y optimización de imágenes |
+| **Frontend** | Vercel | Despliegue automático desde GitHub |
+| **Backend** | Render | Servidor Node.js en la nube (gratuito) |
 
-Lógica y Middlewares:
+### 4. Herramientas de Desarrollo
 
-CORS (Cross-Origin Resource Sharing): Middleware habilitado para permitir que el Frontend (en un puerto diferente) pueda hacer peticiones al Backend de forma segura.
+| Herramienta | Uso |
+|-------------|-----|
+| **Nodemon** | Reinicio automático del backend en desarrollo |
+| **Git + GitHub** | Control de versiones |
+| **VS Code** | Editor de código recomendado |
+| **localStorage** | Persistencia de sesión en el navegador |
 
-Dotenv: Módulo que carga variables de entorno desde un archivo .env a process.env, manteniendo seguras las credenciales de la base de datos y otras claves.
+---
 
-3. Base de Datos y Servicios Cloud (Infraestructura)
-El proyecto se apoya en servicios en la nube para garantizar la persistencia de datos y el almacenamiento de recursos estáticos.
-
-Base de Datos:
-
-MySQL: Sistema de gestión de bases de datos relacional (RDBMS). Utilizado para estructurar de forma robusta los usuarios, comercios, productos y relaciones (ej. favoritos).
-
-mysql2 (Paquete npm): Driver de conexión para Node.js que permite interactuar con la base de datos mediante Connection Pools (pool.query) y promesas nativas (async/await).
-
-Servicios en la Nube (BaaS / PaaS):
-
-Clever Cloud: Plataforma de alojamiento en la nube (PaaS) utilizada para hostear la base de datos MySQL de forma remota, permitiendo acceso persistente desde cualquier entorno.
-
-Cloudinary: Servicio en la nube para la gestión y entrega de imágenes. Utilizado para almacenar las fotografías de los productos y los comercios, optimizando su carga en el frontend y aligerando la base de datos.
-
-4. Herramientas de Desarrollo y Navegador
-Nodemon: Utilidad de desarrollo que monitorea los cambios en los archivos del backend y reinicia automáticamente el servidor de Node.js, agilizando el flujo de trabajo.
-
-LocalStorage (Web API): Almacenamiento local del navegador, utilizado de forma nativa para persistir la sesión del usuario (usuario.id, nombre, token) y mantener el estado de autenticación tras recargar la página.
+## 📁 Estructura del proyecto

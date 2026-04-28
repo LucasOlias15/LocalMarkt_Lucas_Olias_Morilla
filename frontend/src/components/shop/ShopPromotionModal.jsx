@@ -140,7 +140,7 @@ export const ShopPromotionModal = () => {
 
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3`}>
+                      <div className={`w-10 h-10 rounded-xl bg-linear-to-br ${plan.color} flex items-center justify-center mb-3`}>
                         <IconoPlan className="w-5 h-5 text-white" />
                       </div>
                       <h4 className="font-black text-lg text-base-content">{plan.nombre}</h4>
@@ -208,7 +208,7 @@ export const ShopPromotionModal = () => {
               <button 
                 type="button"
                 onClick={handleSolicitar}
-                className={`btn flex-1 sm:flex-none rounded-xl border-none text-white shadow-lg ${
+                className={`btn flex-1 sm:flex-none rounded-xl border-none text-green-950 shadow-lg ${
                   planSeleccionado 
                     ? planes.find(p => p.id === planSeleccionado).bgBoton
                     : "bg-base-300 text-base-content/40 cursor-not-allowed"
