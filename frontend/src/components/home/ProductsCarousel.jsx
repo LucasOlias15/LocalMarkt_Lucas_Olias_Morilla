@@ -3,9 +3,12 @@ import { motion } from "framer-motion";
 import { useCartStore } from "../../store/useCartStore";
 import { ChevronLeft, ChevronRight, ShoppingBasket, Store } from "lucide-react";
 import { Link } from "wouter";
+import useToastStore from "../../store/useToastStore";
 
 export const ProductsCarousel = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+  const toast = useToastStore();
 
   const carouselRef = useRef(null);
 
@@ -15,9 +18,14 @@ export const ProductsCarousel = () => {
 
   // 2. EXTRAEMOS LA LÓGICA DEL CARRITO
   const addToCart = useCartStore((state) => state.addToCart);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [user, setUser] = useState(null);
 
-  // 3. CARGAMOS LOS PRODUCTOS DESDE TU BACKEND
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  // 3. CARGAMOS LOS PRODUCTOS DESDE EL BACKEND
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -38,7 +46,7 @@ export const ProductsCarousel = () => {
     // Primera carga
     fetchFeaturedProducts();
 
-    // ✨ ESCUCHAMOS COMPRAS PARA ACTUALIZAR EL CARRUSEL SIN RECARGAR ✨
+    // Escuchamos compras para actualizar el carrusel sin recargar
     window.addEventListener("actualizarCatalogo", fetchFeaturedProducts);
 
     // Limpieza
@@ -59,7 +67,7 @@ export const ProductsCarousel = () => {
   // Función para añadir al carrito real
   const handleAdd = (producto) => {
     if (!user) {
-      alert("Inicia sesión para añadir productos a tu cesta.");
+      toast.warning("Inicia sesión para añadir productos a tu cesta.");
       return;
     }
     const userId = user.id || user.id_usuario;
@@ -69,14 +77,14 @@ export const ProductsCarousel = () => {
       precio: producto.precio,
       imagen: producto.imagen,
       id_comercio: producto.id_comercio,
-      stock_maximo: producto.stock, // ✨ PASAMOS EL STOCK AL CARRITO ✨
+      stock_maximo: producto.stock,
     };
 
     addToCart(userId, productForCart);
     window.dispatchEvent(new CustomEvent("openCart"));
   };
 
-  // Si está cargando o no hay productos, no renderizamos la sección para que no quede un hueco feo
+  // Si está cargando o no hay productos no se renderiza
   if (isLoading || products.length === 0) return null;
 
   return (
@@ -124,14 +132,13 @@ export const ProductsCarousel = () => {
                 whileHover={{ y: -8 }}
                 className="w-full bg-base-200 rounded-4xl shadow-sm hover:shadow-xl border border-base-300 overflow-hidden relative flex flex-col h-full transition-all duration-300"
               >
-                {/* 🔗 Enlace a la tienda (envuelve imagen e info) */}
+                {/* Enlace a la tienda (envuelve imagen e info) */}
                 <Link href={`/tienda/${product.id_comercio}`}>
                   <div className="cursor-pointer">
                     <figure className="h-52 overflow-hidden relative bg-base-300">
                       <img
                         src={product.imagen}
                         alt={product.nombre}
-                        // ✨ LÓGICA DE GRAYSCALE EN LA IMAGEN ✨
                         className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
                           product.stock <= 0 ? "grayscale opacity-60" : ""
                         }`}

@@ -4,21 +4,21 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useCartStore } from '../../store/useCartStore';
+import useToastStore from '../../store/useToastStore';
 
 export const Header = ({ toggleMenu }) => {
-
-    // 1. PRIMERO: Declaramos los estados locales y de enrutamiento
+    const toast = useToastStore();
+    
     const [user, setUser] = useState(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    
-    // 👇 CAMBIO 1: Extraemos también 'setLocation' para navegar sin recargar la página 👇
+
     const [location, setLocation] = useLocation();
 
-    // 2. SEGUNDO: Extraemos las cosas de Zustand
+    // Extraemos el carrito de zustand
     const carts = useCartStore((state) => state.carts);
     const clearCart = useCartStore((state) => state.clearCart);
 
-    // 3. TERCERO: Ahora sí, como 'user' ya existe, podemos usarlo para las matemáticas
+    // User para las operaciones necesarias en el carrito
     const userId = user?.id || user?.id_usuario;
     const userCart = userId ? (carts[userId] || []) : [];
     const totalItems = userCart.reduce((acc, item) => acc + (item.quantity || 0), 0);
@@ -74,28 +74,27 @@ export const Header = ({ toggleMenu }) => {
 
     const handleLogout = () => {
         try {
-            // 1. Vaciamos el almacenamiento (Esto es lo más crítico)
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             
-            // 2. Intentamos limpiar el estado de Zustand
-            // (Si esto falla por algo, saltará al catch sin romper la web)
             if (typeof clearCart === 'function') {
                 clearCart();
             }
 
-            // 3. Quitamos el foco al menú para que se cierre visualmente
+            // Quitamos el foco al menú para que se cierre visualmente
             if (document.activeElement) {
                 document.activeElement.blur();
             }
             
-            // 4. Limpiamos el estado local
+            // Limpiamos el estado local
             setUser(null);
+            
+            toast.info("Sesión cerrada correctamente")
             
         } catch (error) {
             console.error("Bug cazado durante el cierre de sesión:", error);
         } finally {
-            // replace() borra el historial de esa pestaña y te manda al inicio.
+            // replace() borra el historial de esa pestaña y manda al inicio.
             window.location.replace("/");
         }
     };
@@ -236,7 +235,7 @@ export const Header = ({ toggleMenu }) => {
                                 </>
                             )}
 
-                            {/* ✨ OPCIONES EXTRA SOLO PARA MÓVIL ✨ */}
+
                             <div className="divider md:hidden my-1"></div>
                             
                             <li className="md:hidden">

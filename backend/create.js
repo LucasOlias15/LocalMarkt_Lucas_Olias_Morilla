@@ -3,8 +3,8 @@ import pool from "./src/db/db.js";
 const crearTablas = async () => {
   try {
     // 1. Borrar tablas si existen (en estricto orden inverso a su creación)
-    await pool.query(`DROP TABLE IF EXISTS detalle_pedido`); // <--- NUEVA
-    await pool.query(`DROP TABLE IF EXISTS pedido`);         // <--- NUEVA
+    await pool.query(`DROP TABLE IF EXISTS detalle_pedido`); 
+    await pool.query(`DROP TABLE IF EXISTS pedido`);         
     await pool.query(`DROP TABLE IF EXISTS favorito`);
     await pool.query(`DROP TABLE IF EXISTS valoracion`);
     await pool.query(`DROP TABLE IF EXISTS producto`);

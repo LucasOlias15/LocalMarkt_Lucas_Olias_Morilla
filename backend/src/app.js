@@ -33,7 +33,7 @@ app.use('/api/productos', productRouter);
 app.use('/api/comercios', comercioRouter); 
 app.use('/api/users', userRoutes);
 app.use('/api/favoritos', favoritoRouter);
-app.use('/api/pedidos', pedidoRoutes); // Esto hace que las rutas empiecen por /api/pedidos
+app.use('/api/pedidos', pedidoRoutes); 
 
 app.get("/", (req, res) => {
     res.send("Bienvenido a la API LocalMarkt");

@@ -19,7 +19,7 @@ cloudinary.config({
 
 // 3. El Almacenamiento
 const storage = cloudinaryStorage({
-  // 👇 AQUÍ ESTÁ EL TRUCO: Le pasamos un objeto que contiene la v2
+  // Le pasamos un objeto que contiene la v2
   // Así, cuando la librería busque ".v2.uploader", lo encontrará perfectamente.
   cloudinary: { v2: cloudinary }, 
   

@@ -87,7 +87,7 @@ async function updateComercioImage(nuevaImagen, idComercio) {
     throw error;
   }
 }
-// Al final del archivo, después de updateComercioImage
+
 async function updateComercio(
   idComercio,
   { nombre, descripcion, categoria, contacto, direccion, latitud, longitud },
@@ -121,5 +121,5 @@ export {
   getAllComercios,
   updateComercioImage,
   getComercioByUsuarioId,
-  updateComercio, // <-- nueva exportación
+  updateComercio, 
 };

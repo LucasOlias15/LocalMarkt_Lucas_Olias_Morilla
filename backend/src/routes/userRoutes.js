@@ -12,10 +12,7 @@ import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-// Ahora usamos 'uploadImage' que ya sabe mandar las cosas a Cloudinary
 router.post("/registro", uploadImage.single("imagen"), registrarUsuario);
-
-// ... el resto sigue igual
 
 // Obtener perfil (Protegido)
 router.get("/perfil", authMiddleware, obtenerPerfil);
@@ -26,7 +23,7 @@ router.post("/login", loginUsuario);
 // Comprobar si el email existe para simulación de recuperción de contraseña
 router.post("/verificar-email", verificarEmail);
 
-// Actualización de datos del usuario (¡AHORA PROTEGIDO TAMBIÉN!)
+// Actualización de datos del usuario 
 router.put("/perfil", authMiddleware, actualizarPerfil);
 
 // Eliminar la cuenta totalmente

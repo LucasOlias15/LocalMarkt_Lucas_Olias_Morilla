@@ -9,13 +9,16 @@ import useToastStore from "../store/useToastStore";
 export const ShopDetail = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-  const toast = useToastStore();  
- 
- const [, params] = useRoute("/tienda/:id");
+  const toast = useToastStore();
 
-  // Rescatamos al usuario de forma segura
-  const userString = localStorage.getItem("user");
-  const usuario = userString ? JSON.parse(userString) : null;
+  const [, params] = useRoute("/tienda/:id");
+
+  // Rescatamos el usuario con useEffect para que solo se ejecute en el navegador
+  const [usuario, setUsuario] = useState(null);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUsuario(JSON.parse(storedUser));
+  }, []);
 
   // 1. ESTADOS
   const [products, setProducts] = useState([]);
@@ -23,13 +26,11 @@ export const ShopDetail = () => {
   const [shopInfo, setShopInfo] = useState(null);
   const [errorTienda, setErrorTienda] = useState(false);
   const [contactModalAbierto, setContactModalAbierto] = useState(false);
-  
 
   // El estado para guardar la lista de IDs favoritos de este usuario
   const [favProductos, setFavProductos] = useState([]);
   const [favComercios, setFavComercios] = useState([]);
 
-  // 2. LÓGICA (PETICIÓN AL BACKEND)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -70,7 +71,6 @@ export const ShopDetail = () => {
           }
         }
 
-        // LÓGICA: Guardamos los datos de la tienda en el estado
         setShopInfo({
           name: dataComercio.nombre,
           description:
@@ -82,17 +82,17 @@ export const ShopDetail = () => {
             ? [dataComercio.categoria]
             : ["General"],
           image: dataComercio.imagen,
-          contacto: dataComercio.contacto, // ← AÑADIR
+          contacto: dataComercio.contacto,
           email: dataComercio.email_contacto,
         });
 
-        // LÓGICA: Guardamos los productos en el estado
         const productosFormateados = dataProductos.map((p) => ({
           id: p.id_producto,
           name: p.nombre,
           price: p.precio,
           description: p.descripcion,
           img: p.imagen,
+          stock: p.stock,
           id_comercio: Number(params.id),
         }));
 
@@ -105,54 +105,63 @@ export const ShopDetail = () => {
     };
 
     if (params?.id) fetchData(); // Solo intentamos cargar si tenemos un ID válido
+
+    const recargar = () => fetchData();
+    window.addEventListener("actualizarCatalogo", recargar);
+    return () => window.removeEventListener("actualizarCatalogo", recargar);
   }, [params?.id]); // Volvemos a ejecutar el efecto cada vez que cambie el ID de la ruta
 
   // Lógica para guardar LA TIENDA en favoritos
   const handleToggleTienda = async () => {
-  if (!usuario) {
-    toast.warning("Inicia sesión para guardar favoritos.");
-    return;
-  }
-
-  const idComercioNum = Number(params.id);
-  const yaEsFavorita = favComercios.includes(idComercioNum);
-
-  // Actualizamos el array visualmente
-  if (yaEsFavorita) {
-    setFavComercios(favComercios.filter((id) => id !== idComercioNum));
-  } else {
-    setFavComercios([...favComercios, idComercioNum]);
-  }
-
-  // Enviamos a la BD
-  try {
-    const res = await fetch(`${API_URL}/favoritos/toggleFavs`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_usuario: usuario.id || usuario.id_usuario,
-        id_comercio: idComercioNum,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      toast.success(data.message || (yaEsFavorita ? "Tienda eliminada de favoritos" : "Tienda añadida a favoritos ⭐"));
-    } else {
-      throw new Error(data.error);
+    if (!usuario) {
+      toast.warning("Inicia sesión para guardar favoritos.");
+      return;
     }
-  } catch (error) {
-    console.error("Error al guardar tienda", error);
-    toast.error("Error al guardar favorito");
-    // Revertir cambio visual
+
+    const idComercioNum = Number(params.id);
+    const yaEsFavorita = favComercios.includes(idComercioNum);
+
+    // Actualizamos el array visualmente
     if (yaEsFavorita) {
-      setFavComercios(prev => [...prev, idComercioNum]);
+      setFavComercios(favComercios.filter((id) => id !== idComercioNum));
     } else {
-      setFavComercios(prev => prev.filter(id => id !== idComercioNum));
+      setFavComercios([...favComercios, idComercioNum]);
     }
-  }
-};
+
+    // Enviamos a la BD
+    try {
+      const res = await fetch(`${API_URL}/favoritos/toggleFavs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_usuario: usuario.id || usuario.id_usuario,
+          id_comercio: idComercioNum,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(
+          data.message ||
+            (yaEsFavorita
+              ? "Tienda eliminada de favoritos"
+              : "Tienda añadida a favoritos ⭐"),
+        );
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error("Error al guardar tienda", error);
+      toast.error("Error al guardar favorito");
+      // Revertir cambio visual
+      if (yaEsFavorita) {
+        setFavComercios((prev) => [...prev, idComercioNum]);
+      } else {
+        setFavComercios((prev) => prev.filter((id) => id !== idComercioNum));
+      }
+    }
+  };
 
   if (errorTienda) {
     return (
@@ -189,7 +198,7 @@ export const ShopDetail = () => {
           {/* Imagen principal del comercio */}
           {shopInfo ? (
             <img
-              src={shopInfo.image} // Usamos el estado que ya tiene la URL
+              src={shopInfo.image}
               className="w-full h-full object-cover"
               alt={shopInfo.name}
             />
@@ -200,7 +209,6 @@ export const ShopDetail = () => {
             </div>
           )}
 
-          {/* Degradado superpuesto para mejorar la lectura de textos superiores si los hay */}
           <div className="absolute inset-0 bg-linear-to-t from-base-100 via-transparent to-black/20" />
         </div>
       </section>
@@ -217,14 +225,11 @@ export const ShopDetail = () => {
         ) : (
           shopInfo && (
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-12 items-start">
-              {/* INFORMACIÓN PRINCIPAL (80%) */}
               <div className="lg:col-span-8">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                 >
-                  {/* Aquí inyectamos el nombre real */}
-                  {/* Cabecera del Comercio con Botón Minimalista */}
                   <div className="flex items-center gap-6 mb-8">
                     <h1 className="text-5xl md:text-7xl font-black text-base-content tracking-tighter">
                       {shopInfo.name}
@@ -282,7 +287,7 @@ export const ShopDetail = () => {
                 </motion.div>
               </div>
 
-              {/* HORARIO (20%) */}
+              {/* HORARIO (Estático) */}
               <aside className="lg:col-span-2">
                 <div className="bg-base-200/50 dark:bg-base-200/20 backdrop-blur-md p-6 rounded-[2.5rem] border border-base-300 shadow-xl">
                   <h3 className="font-black text-lg mb-4 text-jungle_teal dark:text-jungle_teal-600 uppercase tracking-tighter">

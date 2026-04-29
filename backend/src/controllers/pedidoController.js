@@ -26,7 +26,7 @@ export const getMisPedidos = async (req, res) => {
           fecha: filaActual.fecha,
           total: filaActual.total,
           estado: filaActual.estado,
-          tiendas: [], // 👈 Magia: Un array para guardar todas las tiendas de este pedido
+          tiendas: [], 
         };
       }
 
@@ -62,7 +62,7 @@ export const getMisPedidos = async (req, res) => {
     // 2. Convertimos el objeto gigante en un Array normal para el frontend
     const pedidosFinales = Object.values(pedidosAgrupadosObj);
 
-    // Opcional pero recomendado: Ordenar para que los más nuevos salgan primero
+    // Ordenar para que los más nuevos salgan primero
     pedidosFinales.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
     // 3. Enviamos la respuesta limpia al cliente
@@ -78,7 +78,6 @@ export const simularPedido = async (req, res) => {
     // Extraemos los datos que nos va a enviar el frontend en formato JSON
     const { id_usuario, id_comercio, total, productos } = req.body;
 
-    // Validamos mínima por seguridad
     if (!id_usuario || !productos || productos.length === 0) {
       return res
         .status(400)

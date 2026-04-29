@@ -210,7 +210,8 @@ export const Profile = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setLocation("/login");
+    setLocation("/");
+    toast.info("Sesión cerrada correctamente")
   };
 
   const handleLocationSelect = (coords) => {

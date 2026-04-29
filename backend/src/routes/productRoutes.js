@@ -12,11 +12,11 @@ import { uploadImage } from "../middlewares/cloudinary.js";
 
 const router = Router();
 
-//Todas las rutas que tengan authMiddleware son para comprobar que el usuario que accede a ella tenga los "permisos" necesarios
-// es decir, que esté autenticado. Esto se hace para evitar que cualquier persona pueda crear, modificar o eliminar productos sin estar logueada.
-// GET /api/productos - Obtener todos los productos del mercado
-// En productRoutes.js
-router.get("/explorar", obtenerTodosLosProductos); // GET /api/productos/explorar
+//Todas las rutas que tengan authMiddleware son para comprobar que el usuario que accede a ella tenga los 
+// "permisos" necesarios es decir, que esté autenticado. Esto se hace para evitar que cualquier persona pueda 
+// crear, modificar o eliminar productos sin estar logueada.
+
+router.get("/explorar", obtenerTodosLosProductos); 
 
 router.post("/registrar", authMiddleware, uploadImage.single('imagen'), registrarProducto);
 

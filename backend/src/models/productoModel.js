@@ -74,7 +74,7 @@ async function getAllProductosWithComercio() {
                 p.imagen, 
                 p.descripcion,
                 p.stock,
-                p.id_comercio, /* 👈 ¡ESTA ES LA PIEZA QUE FALTABA! */
+                p.id_comercio, 
                 c.nombre AS nombre_comercio, 
                 c.categoria
             FROM producto p

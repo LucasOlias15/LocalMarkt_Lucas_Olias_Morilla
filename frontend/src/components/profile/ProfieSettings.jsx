@@ -183,9 +183,9 @@ export const ProfileSettings = ({
               </div>
             </form>
 
-            {/* Zona peligrosa */}
+            {/* Eliminar cuenta */}
             <div className="mt-8 pt-8 border-t border-error/20">
-              <h3 className="text-lg font-black text-error mb-2">⚠️ Zona peligrosa</h3>
+              <h3 className="text-lg font-black text-error mb-2">Eliminar Cuenta Permanentemente</h3>
               <p className="text-sm text-base-content/60 mb-4">
                 Eliminar tu cuenta es una acción permanente. Se borrarán todos tus datos, pedidos y valoraciones.
               </p>

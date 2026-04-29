@@ -63,9 +63,9 @@ export const CategoriesBento = () => {
 
         {/* CATEGORÍA 4 */}
         <CategoryCard 
-          title="Lácteos"
-          desc="Quesos artesanos"
-          img="/categories/lacteos.jpg"
+          title="Bio"
+          desc="Plantas de todo tipo"
+          img="/categories/Bio.jpg"
           href="/explorar?categoria=Bio"
         />
 
@@ -92,7 +92,6 @@ export const CategoriesBento = () => {
   );
 };
 
-// Sub-componente para no repetir código 5 veces
 const CategoryCard = ({ span = "", title, desc, img ,href}) => (
   <motion.div 
     variants={{ hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0 } }} 

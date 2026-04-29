@@ -1,4 +1,4 @@
-import { UserRoundKey, UserRoundCog, Store } from "lucide-react";
+import { UserRoundKey, UserRoundCog, Store, LogOut } from "lucide-react";
 
 export const ProfileHeader = ({ user, onLogout }) => {
   return (
@@ -49,20 +49,7 @@ export const ProfileHeader = ({ user, onLogout }) => {
         className="z-10 btn btn-circle btn-ghost text-base-content/40 hover:bg-error/10 hover:text-error transition-colors md:self-start"
         title="Cerrar sesión"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
-        </svg>
+        <LogOut/>
       </button>
     </section>
   );

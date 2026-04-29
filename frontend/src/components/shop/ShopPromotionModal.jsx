@@ -191,7 +191,7 @@ export const ShopPromotionModal = () => {
           {user && user.rol !== "dueño" && planSeleccionado && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
               <p className="text-sm text-amber-800 font-medium">
-                💡 Para solicitar un plan necesitas ser dueño de un comercio. 
+                Para solicitar un plan necesitas ser dueño de un comercio. 
                 Serás redirigido a la página de registro para crear tu tienda.
               </p>
             </div>

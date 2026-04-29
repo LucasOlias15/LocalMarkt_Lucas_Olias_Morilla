@@ -1,10 +1,9 @@
 import { createProducto, getProductosByComercio, getProductoById, updateProducto, deleteProducto , getAllProductosWithComercio} from "../models/productoModel.js";
 import { getComercioById } from "../models/comercioModel.js";
 
-// Controlador para registrar un nuevo producto
 export const registrarProducto = async (req, res) => {
     try {
-        // ☁️ CLOUDINARY: Quitamos 'imagen' del req.body porque ya no viene como texto
+        // Quitamos 'imagen' del req.body porque ya no viene como texto
         const { id_comercio, nombre, descripcion, stock, precio } = req.body;
         const idUsuarioAutenticado = req.user.id;
 
@@ -22,10 +21,10 @@ export const registrarProducto = async (req, res) => {
             return res.status(400).json({ error: "El stock debe ser un número entero." });
         }
 
-        // ☁️ CLOUDINARY: Capturamos la URL segura que nos devuelve el middleware
+        // Capturamos la URL segura que nos devuelve el middleware
         const imagenUrl = req.file?.path || req.file?.secure_url || null;
 
-        // Opcional: Obligar a que el producto tenga foto
+        // Obligar a que el producto tenga foto
         if (!imagenUrl) {
             return res.status(400).json({ error: "Es obligatorio subir una imagen para el producto." });
         }
@@ -42,12 +41,12 @@ export const registrarProducto = async (req, res) => {
             return res.status(403).json({ error: "No tienes permiso para añadir productos a este comercio" });
         }
 
-        // 3. Crear el producto (☁️ CLOUDINARY: Le pasamos imagenUrl)
+        // 3. Crear el producto 
         const productoId = await createProducto(id_comercio, nombre, descripcion, stock, precio, imagenUrl);
 
         return res.status(201).json({ 
             id: productoId,
-            imagen: imagenUrl, // Devolvemos la URL por si el Front la necesita
+            imagen: imagenUrl, 
             message: "Producto registrado exitosamente" 
         });
 
@@ -88,7 +87,7 @@ export const obtenerProductoPorId = async (req, res) => {
 export const actualizarProducto = async (req, res) => {
     try {
         const { id_producto } = req.params; 
-        // ☁️ CLOUDINARY: Quitamos 'imagen' del req.body
+        // Quitamos 'imagen' del req.body
         const { nombre, descripcion, stock, precio } = req.body; 
         const idUsuarioAutenticado = req.user.id;
 
@@ -110,10 +109,9 @@ export const actualizarProducto = async (req, res) => {
             return res.status(403).json({ error: "No tienes permiso para actualizar este producto" });
         }  
 
-        // ☁️ CLOUDINARY: Lógica de actualización de imagen
+        // CLOUDINARY: Lógica de actualización de imagen
         // Si el usuario subió una foto nueva, req.file existirá y usaremos su URL.
         // Si no subió nada, mantenemos la imagen que ya tenía guardada en la base de datos.
-        // (Nota: Asegúrate de que 'productoExistente.imagen' coincida con el nombre de tu columna en BD)
         const imagenFinal = req.file ? req.file.path : productoExistente.imagen; 
 
         // 3. Si todo está bien, procedemos a actualizar el producto

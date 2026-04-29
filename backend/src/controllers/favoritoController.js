@@ -1,4 +1,4 @@
-import pool from "../db/db.js"; // <-- Asegúrate de que la ruta a tu db es correcta
+import pool from "../db/db.js"; 
 
 export const toggleFavorito = async (req, res) => {
   try {

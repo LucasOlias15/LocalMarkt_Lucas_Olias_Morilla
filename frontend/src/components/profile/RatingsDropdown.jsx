@@ -38,9 +38,7 @@ export const RatingsDropdown = ({
 
             {valoraciones.length === 0 ? (
               <p className="text-sm text-base-content/40 italic bg-base-100 p-6 rounded-3xl border border-base-200 text-center">
-                {isOwner
-                  ? "Aún no has recibido ninguna valoración."
-                  : "Aún no has hecho ninguna valoración."}
+                 "Zona no terminada ¿Quizás en un futuro...?."
               </p>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
