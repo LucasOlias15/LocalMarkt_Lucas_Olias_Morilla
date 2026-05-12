@@ -90,7 +90,7 @@ Los dueños gestionan su catálogo, pedidos y perfil desde un panel de administr
 
 ## 📁 Estructura del proyecto
 Proyecto/
-├── frontend/ # React + Vite
+| ── frontend/ # React + Vite
 │ └── src/
 │ ├── components/ # Componentes reutilizables
 │ │ ├── common/ # Footer, Header, Logo, ToastContainer...
@@ -145,18 +145,21 @@ text
 cd backend
 npm install
 npm run dev        # → http://localhost:3000
-🎨 Frontend
-bash
+```
+### 🎨 Frontend
+```bash
 cd frontend
 npm install
 npm run dev        # → http://localhost:5173
-🌱 Base de datos
-bash
+```
+### 🌱 Base de datos
+```bash
 cd backend
 npm run seed       # Poblar la base de datos con datos de prueba
-🔐 Variables de entorno
+```
+### 🔐 Variables de entorno
 Backend (backend/.env)
-env
+```env
 JWT_SECRET=clave_secreta
 DB_HOST=localhost
 DB_USER=root
@@ -166,10 +169,10 @@ CLOUDINARY_CLOUD_NAME=tu_cloud
 CLOUDINARY_API_KEY=tu_key
 CLOUDINARY_API_SECRET=tu_secret
 Frontend (frontend/.env)
-env
+```
 VITE_API_URL=http://localhost:3000/api
-🗄️ Esquema de base de datos
-text
+### 🗄️ Esquema de base de datos
+```text
 usuario (id_usuario, nombre, email, contraseña, rol)
 comercio (id_comercio, id_usuario, nombre, descripcion, categoria, contacto, direccion, latitud, longitud, imagen)
 producto (id_producto, id_comercio, nombre, descripcion, stock, precio, imagen)
@@ -177,7 +180,8 @@ pedido (id_pedido, id_usuario, id_comercio, fecha, total, estado)
 detalle_pedido (id_detalle, id_pedido, id_producto, cantidad, precio_unitario)
 favorito (id_favorito, id_usuario, id_comercio, id_producto)
 valoracion (id_valoracion, id_usuario, id_comercio, id_producto, puntuacion, comentario, fecha)
-🗺️ Roadmap – Próximos pasos
+```
+### 🗺️ Roadmap – Próximos pasos
 📊 Panel de estadísticas para dueños
 
 💳 Pasarela de pago real (Stripe / PayPal)
@@ -188,7 +192,7 @@ valoracion (id_valoracion, id_usuario, id_comercio, id_producto, puntuacion, com
 
 📱 PWA para instalar en móvil
 
-👨‍💻 Autor
+### 👨‍💻 Autor
 Lucas Olías Morilla – Proyecto Final de Grado Superior en Desarrollo de Aplicaciones Web (DAW)
 
 https://img.shields.io/badge/GitHub-LucasOlias15-black?logo=github
